@@ -438,6 +438,16 @@ async function saveCred(id){
   showNotif('Créditos confirmados!','success',isAvDemand);
 }
 
+// ── Duplicar ──────────────────────────────────────────────────────
+async function duplicateDemand(id){
+  const d=demands.find(x=>x.id===id);if(!d)return;
+  setSyncing(true);
+  const{error}=await sb.from('demandas').insert([{id:uid(),date:d.date,resp:d.resp,title:d.title,cat:d.cat,post:d.post,clickup:d.clickup,cred:null}]);
+  const isAvDemand=d.resp==='Eduardo';
+  if(error){setSyncing(false);showNotif('Erro ao duplicar: '+error.message,'error',isAvDemand);return;}
+  showNotif('Demanda duplicada!','success',isAvDemand);
+}
+
 // ── Excluir ───────────────────────────────────────────────────────
 async function deleteDemand(id){
   if(!confirm('Remover esta demanda permanentemente?'))return;
@@ -519,6 +529,7 @@ function renderCard(d,showCredInput,avCard=false){
     <div class="demand-top">
       <span class="demand-title">${d.title}</span>
       <div class="demand-actions">
+        <button class="btn sm" onclick="duplicateDemand('${d.id}')">⧉ Duplicar</button>
         <button class="btn sm" onclick="toggleEdit('${d.id}')">✎ Editar</button>
         <button class="btn sm danger" onclick="deleteDemand('${d.id}')">✕</button>
       </div>
