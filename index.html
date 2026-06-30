@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard B1 - Design Performance</title>
+<title>Dashboard B1 - Design Performance [TESTE]</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <style>
@@ -18,6 +18,7 @@
   --red:#b83232;--red-light:#fdf0f0;
   --blue:#1a5fa8;--blue-light:#eaf2fb;
   --purple:#7040b0;--purple-light:#f3eeff;
+  --teal:#0e7490;--teal-light:#ecfeff;
 }
 html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,sans-serif}
 .app{background:var(--bg);min-height:100vh}
@@ -25,6 +26,7 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;border:0.5px solid var(--border)}
 .tab{padding:7px 20px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text3);border:none;background:transparent;transition:all .15s;font-family:inherit}
 .tab.active{background:var(--orange);color:#fff;font-weight:500}
+.tab.active.av-tab{background:var(--teal)}
 .tab:hover:not(.active){color:var(--text2)}
 .view{padding:24px 28px;display:none}.view.active{display:block}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
@@ -33,6 +35,8 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .btn:hover{border-color:var(--orange);color:var(--orange)}
 .btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:500}
 .btn.primary:hover{background:#e07020}
+.btn.primary.teal{background:var(--teal);border-color:var(--teal)}
+.btn.primary.teal:hover{background:#0a6070}
 .btn.danger{border-color:#e0b0b0;color:var(--red);background:var(--red-light)}
 .btn.danger:hover{background:#fce0e0;border-color:var(--red)}
 .btn.sm{padding:5px 11px;font-size:12px}
@@ -56,6 +60,8 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .demand-list{display:flex;flex-direction:column;gap:10px}
 .demand-card{background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:16px 18px;transition:border-color .15s;border-left:3px solid var(--orange)}
 .demand-card.done{border-left:3px solid var(--green)}
+.demand-card.av{border-left:3px solid var(--teal)}
+.demand-card.av.done{border-left:3px solid var(--green)}
 .demand-card:hover{border-color:var(--border2)}
 .demand-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:9px}
 .demand-title{font-size:14px;color:var(--text);font-weight:500;flex:1;line-height:1.4}
@@ -67,10 +73,12 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .b-outros{background:var(--purple-light);color:var(--purple)}
 .b-pending{background:var(--orange-light);color:var(--orange)}
 .b-done{background:var(--green-light);color:var(--green)}
+.b-av{background:var(--teal-light);color:var(--teal)}
 .demand-info{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text3);flex-wrap:wrap}
 .avatar{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
 .av-d{background:#ddeeff;color:#1a5fa8}.av-a{background:#e8f5e0;color:#2e6b18}
 .av-p{background:var(--orange-light);color:var(--orange)}.av-v{background:#fce8f5;color:#8b3070}
+.av-e{background:var(--teal-light);color:var(--teal)}
 .cred-input-wrap{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:0.5px solid var(--border)}
 .cred-label{font-size:12px;color:var(--orange);flex:1}
 .cred-input{background:#fff;border:0.5px solid var(--orange-mid);border-radius:6px;padding:7px 11px;color:var(--text);font-size:13px;width:90px;font-family:inherit;outline:none}
@@ -89,6 +97,7 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .kpi-label{font-size:10px;color:var(--text3);margin-bottom:9px;text-transform:uppercase;letter-spacing:.05em}
 .kpi-val{font-size:26px;font-weight:500;color:var(--text);line-height:1}
 .kpi-val.accent{color:var(--orange)}
+.kpi-val.accent-teal{color:var(--teal)}
 .kpi-sub{font-size:12px;color:var(--text3);margin-top:4px}
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .card{background:#fff;border-radius:10px;padding:18px;border:0.5px solid var(--border)}
@@ -108,6 +117,7 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .sep{height:0.5px;background:var(--border);margin:14px 0}
 .total-row{display:flex;justify-content:space-between;align-items:center}
 .total-label{font-size:12px;color:var(--text3)}.total-val{font-size:14px;font-weight:500;color:var(--orange)}
+.total-val.teal{color:var(--teal)}
 .notif{font-size:13px;padding:9px 16px;border-radius:8px;margin-bottom:16px;display:none;align-items:center;gap:6px}
 .notif.show{display:flex}
 .notif.success{background:var(--green-light);border:0.5px solid #a0d8b8;color:var(--green)}
@@ -119,6 +129,7 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .sync-indicator{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
 .sync-dot.syncing{background:var(--orange);animation:pulse .8s infinite}
+.av-banner{background:var(--teal-light);border:0.5px solid #a0d4dc;border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--teal)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 </style>
 </head>
@@ -137,18 +148,19 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
         <select id="month-filter" onchange="applyMonthFilter()" style="background:#fff;border:0.5px solid var(--border2);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;cursor:pointer"></select>
       </div>
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('demandas',this)">Demandas</button>
-        <button class="tab" onclick="switchTab('dashboard',this)">Dashboard</button>
+        <button class="tab active" onclick="switchTab('demandas',this)">Design</button>
+        <button class="tab" onclick="switchTab('dashboard',this)">Dashboard Design</button>
+        <button class="tab" onclick="switchTab('audiovisual',this)">Audiovisual</button>
       </div>
     </div>
   </div>
 
-  <!-- ABA DEMANDAS -->
+  <!-- ABA DESIGN -->
   <div class="view active" id="view-demandas">
     <div class="notif" id="notif"><span id="notif-msg"></span></div>
     <div class="modal" id="modal-new">
       <div class="modal-title">
-        <span>Nova demanda</span>
+        <span>Nova demanda — Design</span>
         <button class="btn sm" onclick="toggleModal()">✕ Fechar</button>
       </div>
       <div class="form-grid">
@@ -165,14 +177,12 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
       </div>
       <div class="form-actions">
         <button class="btn" onclick="toggleModal()">Cancelar</button>
-        <button class="btn primary" id="btn-save" onclick="saveDemand()">✓ Criar demanda</button>
+        <button class="btn primary" id="btn-save" onclick="saveDemand('design')">✓ Criar demanda</button>
       </div>
     </div>
     <div class="section-header">
       <span class="section-title" id="demand-count">Carregando...</span>
-      <div style="display:flex;gap:8px">
-        <button class="btn primary" onclick="toggleModal()">+ Nova demanda</button>
-      </div>
+      <button class="btn primary" onclick="toggleModal()">+ Nova demanda</button>
     </div>
     <div class="filters" id="demand-filters">
       <span class="filter-label">Designer</span>
@@ -184,7 +194,7 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
     </div>
     <div class="demand-list" id="demand-list"><div class="loading">Carregando demandas...</div></div>
     <div class="done-section">
-      <div class="done-header" onclick="toggleDone()">
+      <div class="done-header" onclick="toggleDone('done-body','done-toggle-btn')">
         <div class="done-header-left">
           <span class="section-title">Concluídas</span>
           <span class="done-badge" id="done-count">0</span>
@@ -205,7 +215,70 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
     </div>
   </div>
 
-  <!-- ABA DASHBOARD -->
+  <!-- ABA AUDIOVISUAL -->
+  <div class="view" id="view-audiovisual">
+    <div class="notif" id="notif-av"><span id="notif-av-msg"></span></div>
+    <div class="av-banner">
+      <span class="avatar av-e" style="width:28px;height:28px;font-size:11px">ED</span>
+      <span><strong>Eduardo</strong> — Motion Designer · Audiovisual</span>
+    </div>
+    <div class="modal" id="modal-av">
+      <div class="modal-title">
+        <span>Nova demanda — Audiovisual</span>
+        <button class="btn sm" onclick="toggleModalAv()">✕ Fechar</button>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Data da entrega</label><input type="date" id="av-date"></div>
+        <div class="field"><label>Responsável</label>
+          <select id="av-resp"><option value="Eduardo">Eduardo</option></select>
+        </div>
+        <div class="field"><label>Título da demanda</label><input type="text" id="av-title" placeholder="Ex: Animação Stories Copa"></div>
+        <div class="field"><label>Categoria</label>
+          <select id="av-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select>
+        </div>
+        <div class="field"><label>Data de postagem</label><input type="date" id="av-post"></div>
+        <div class="field"><label>Link ClickUp</label><input type="text" id="av-clickup" placeholder="https://app.clickup.com/..."></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" onclick="toggleModalAv()">Cancelar</button>
+        <button class="btn primary teal" id="btn-save-av" onclick="saveDemand('audiovisual')">✓ Criar demanda</button>
+      </div>
+    </div>
+    <div class="section-header">
+      <span class="section-title" id="av-demand-count">Carregando...</span>
+      <button class="btn primary teal" onclick="toggleModalAv()">+ Nova demanda</button>
+    </div>
+    <div class="demand-list" id="av-demand-list"><div class="loading">Carregando demandas...</div></div>
+    <div class="done-section">
+      <div class="done-header" onclick="toggleDone('av-done-body','av-done-toggle-btn')">
+        <div class="done-header-left">
+          <span class="section-title">Concluídas</span>
+          <span class="done-badge" id="av-done-count">0</span>
+        </div>
+        <button class="btn sm" id="av-done-toggle-btn" style="pointer-events:none">▼ Expandir</button>
+      </div>
+      <div class="done-body" id="av-done-body">
+        <div class="demand-list" id="av-done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
+      </div>
+    </div>
+    <!-- Mini dashboard Audiovisual -->
+    <div style="margin-top:32px">
+      <div class="section-title" style="margin-bottom:14px">Performance — Audiovisual</div>
+      <div class="kpi-row" id="av-kpis">
+        <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent-teal">0</div><div class="kpi-sub">total confirmado</div></div>
+        <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">0</div><div class="kpi-sub">concluídas</div></div>
+        <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">0</div><div class="kpi-sub">créditos / entrega</div></div>
+        <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">0</div><div class="kpi-sub">aguardando créditos</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Créditos por categoria — Audiovisual</div>
+        <div class="legend" id="av-leg-cat"></div>
+        <div style="position:relative;width:100%;height:180px"><canvas id="av-cat-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA DASHBOARD (Design) -->
   <div class="view" id="view-dashboard">
     <div class="kpi-row" id="d-kpis">
       <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent">0</div><div class="kpi-sub">total confirmado</div></div>
@@ -255,27 +328,32 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 </div>
 
 <script>
-// ── Supabase config ──────────────────────────────────────────────
-const SUPABASE_URL = 'https://ktzdvtyocftrzfgvxoao.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0emR2dHlvY2Z0cnpmZ3Z4b2FvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3MDU4MzAsImV4cCI6MjA5ODI4MTgzMH0.sGDE_lUMKD2ylxhy0isXS0mcWnMX7H-uqT1fR82p94g';
+// ── Supabase ─────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://ebulxcffxpkchyrkrbbe.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVidWx4Y2ZmeHBrY2h5cmtyYmJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODg4NzAsImV4cCI6MjA5ODM2NDg3MH0.TqQDw-xc8CZ0vztW_KthiopMgxGGxgWBPdH7GnPDw0I';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── Constantes ───────────────────────────────────────────────────
-const RC={Derick:'#4a90d9',Alexandre:'#3a9e50',Pablo:'#F5822D',Vinicius:'#a040a0'};
+// ── Constantes ────────────────────────────────────────────────────
+const DESIGN_TEAM = ['Derick','Alexandre','Pablo','Vinicius'];
+const RC={Derick:'#4a90d9',Alexandre:'#3a9e50',Pablo:'#F5822D',Vinicius:'#a040a0',Eduardo:'#0e7490'};
 const CC={CRM:'#4a90d9',ADS:'#3a9e50',REDES:'#e08020',INTERNO:'#999',OUTROS:'#7040b0'};
 const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-outros'};
 const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros'};
-const AV={Derick:['av-d','DE'],Alexandre:['av-a','AL'],Pablo:['av-p','PA'],Vinicius:['av-v','VI']};
+const AV={Derick:['av-d','DE'],Alexandre:['av-a','AL'],Pablo:['av-p','PA'],Vinicius:['av-v','VI'],Eduardo:['av-e','ED']};
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 let demands=[],filterResp='all',filterDoneResp='all',ddResp='all',ddCat='all';
-let catCI=null,respCI=null,modalOpen=false,activeMonth='all',doneOpen=false;
+let catCI=null,respCI=null,avCatCI=null;
+let modalOpen=false,modalAvOpen=false,activeMonth='all';
+let doneStates={};
 
 function fmt(n){return Number(n||0).toLocaleString('pt-BR')}
 function fmtDate(s){if(!s)return'—';const p=s.split('-');return p.length===3?`${p[2]}/${p[1]}`:'—'}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+const isDesign = d => DESIGN_TEAM.includes(d.resp);
+const isAV = d => d.resp === 'Eduardo';
 
-// ── Sync indicator ───────────────────────────────────────────────
+// ── Sync indicator ────────────────────────────────────────────────
 function setSyncing(on){
   document.getElementById('sync-dot').className='sync-dot'+(on?' syncing':'');
   document.getElementById('sync-label').textContent=on?'Sincronizando...':'Sincronizado';
@@ -285,88 +363,102 @@ function setConnected(){
   document.getElementById('sync-label').textContent='Conectado';
 }
 
-// ── Notif ────────────────────────────────────────────────────────
-function showNotif(msg,type='success'){
-  const el=document.getElementById('notif');
-  document.getElementById('notif-msg').textContent=msg;
+// ── Notif ─────────────────────────────────────────────────────────
+function showNotif(msg,type='success',av=false){
+  const el=document.getElementById(av?'notif-av':'notif');
+  document.getElementById(av?'notif-av-msg':'notif-msg').textContent=msg;
   el.className='notif show '+type;
   setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-// ── Supabase: carregar dados ─────────────────────────────────────
+// ── Load ──────────────────────────────────────────────────────────
 async function loadData(){
   const{data,error}=await sb.from('demandas').select('*').order('created_at',{ascending:false});
-  if(error){showNotif('Erro ao carregar dados: '+error.message,'error');return;}
+  if(error){showNotif('Erro ao carregar: '+error.message,'error');return;}
   demands=data||[];
   setConnected();
   renderAll();
+  renderAV();
   if(document.getElementById('view-dashboard').classList.contains('active'))renderDashboard();
 }
 
-// ── Supabase: tempo real ─────────────────────────────────────────
 function setupRealtime(){
   sb.channel('demandas-changes')
-    .on('postgres_changes',{event:'*',schema:'public',table:'demandas'},()=>{loadData();})
+    .on('postgres_changes',{event:'*',schema:'public',table:'demandas'},()=>loadData())
     .subscribe();
 }
 
-// ── Tabs ─────────────────────────────────────────────────────────
+// ── Tabs ──────────────────────────────────────────────────────────
 function switchTab(tab,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('view-'+tab).classList.add('active');
   if(tab==='dashboard')renderDashboard();
+  if(tab==='audiovisual')renderAV();
 }
 
-// ── Modal ────────────────────────────────────────────────────────
+// ── Modais ────────────────────────────────────────────────────────
 function toggleModal(){
-  const m=document.getElementById('modal-new');
   modalOpen=!modalOpen;
+  const m=document.getElementById('modal-new');
   if(modalOpen){m.classList.add('open');}
   else{m.classList.remove('open');['f-date','f-resp','f-cat','f-title','f-post','f-clickup'].forEach(id=>document.getElementById(id).value='');}
 }
-
-// ── Criar demanda ────────────────────────────────────────────────
-async function saveDemand(){
-  const date=document.getElementById('f-date').value,
-        resp=document.getElementById('f-resp').value,
-        title=document.getElementById('f-title').value.trim(),
-        cat=document.getElementById('f-cat').value,
-        post=document.getElementById('f-post').value||null,
-        clickup=document.getElementById('f-clickup').value.trim()||null;
-  if(!date||!resp||!title||!cat){showNotif('Preencha data, designer, título e categoria.','error');return;}
-  const btn=document.getElementById('btn-save');
-  btn.disabled=true;setSyncing(true);
-  const{error}=await sb.from('demandas').insert([{id:uid(),date,resp,title,cat,post,clickup,cred:null}]);
-  btn.disabled=false;
-  if(error){setSyncing(false);showNotif('Erro ao criar demanda: '+error.message,'error');return;}
-  toggleModal();showNotif('Demanda criada com sucesso!');
+function toggleModalAv(){
+  modalAvOpen=!modalAvOpen;
+  const m=document.getElementById('modal-av');
+  if(modalAvOpen){m.classList.add('open');}
+  else{m.classList.remove('open');['av-date','av-cat','av-title','av-post','av-clickup'].forEach(id=>document.getElementById(id).value='');}
 }
 
-// ── Confirmar créditos ───────────────────────────────────────────
+// ── Criar demanda ─────────────────────────────────────────────────
+async function saveDemand(setor){
+  const isAv=setor==='audiovisual';
+  const date=document.getElementById(isAv?'av-date':'f-date').value;
+  const resp=isAv?'Eduardo':document.getElementById('f-resp').value;
+  const title=document.getElementById(isAv?'av-title':'f-title').value.trim();
+  const cat=document.getElementById(isAv?'av-cat':'f-cat').value;
+  const post=document.getElementById(isAv?'av-post':'f-post').value||null;
+  const clickup=document.getElementById(isAv?'av-clickup':'f-clickup').value.trim()||null;
+  if(!date||!resp||!title||!cat){showNotif('Preencha data, designer, título e categoria.','error',isAv);return;}
+  const btnId=isAv?'btn-save-av':'btn-save';
+  document.getElementById(btnId).disabled=true;setSyncing(true);
+  const{error}=await sb.from('demandas').insert([{id:uid(),date,resp,title,cat,post,clickup,cred:null}]);
+  document.getElementById(btnId).disabled=false;
+  if(error){setSyncing(false);showNotif('Erro: '+error.message,'error',isAv);return;}
+  isAv?toggleModalAv():toggleModal();
+  showNotif('Demanda criada!','success',isAv);
+}
+
+// ── Créditos ──────────────────────────────────────────────────────
 async function saveCred(id){
   const inp=document.getElementById('ci-'+id),val=parseInt(inp.value);
-  if(isNaN(val)||val<0){showNotif('Informe um valor de créditos válido.','error');return;}
+  if(isNaN(val)||val<0){showNotif('Valor inválido.','error');return;}
   setSyncing(true);
+  const d=demands.find(x=>x.id===id);
+  const isAvDemand=d&&d.resp==='Eduardo';
   const{error}=await sb.from('demandas').update({cred:val}).eq('id',id);
-  if(error){setSyncing(false);showNotif('Erro ao confirmar créditos: '+error.message,'error');return;}
-  showNotif('Créditos confirmados! Demanda concluída.');
+  if(error){setSyncing(false);showNotif('Erro: '+error.message,'error',isAvDemand);return;}
+  showNotif('Créditos confirmados!','success',isAvDemand);
 }
 
-// ── Excluir ──────────────────────────────────────────────────────
+// ── Excluir ───────────────────────────────────────────────────────
 async function deleteDemand(id){
   if(!confirm('Remover esta demanda permanentemente?'))return;
   setSyncing(true);
+  const d=demands.find(x=>x.id===id);
+  const isAvDemand=d&&d.resp==='Eduardo';
   const{error}=await sb.from('demandas').delete().eq('id',id);
-  if(error){setSyncing(false);showNotif('Erro ao remover: '+error.message,'error');return;}
-  showNotif('Demanda removida.');
+  if(error){setSyncing(false);showNotif('Erro: '+error.message,'error',isAvDemand);return;}
+  showNotif('Demanda removida.','success',isAvDemand);
 }
 
-// ── Editar ───────────────────────────────────────────────────────
+// ── Editar ────────────────────────────────────────────────────────
 function toggleEdit(id){document.getElementById('ep-'+id).classList.toggle('open');}
 async function saveEdit(id){
   const d=demands.find(x=>x.id===id);if(!d)return;
+  const isAvDemand=d.resp==='Eduardo';
   const er=document.getElementById('er-'+id).value,
         ec=document.getElementById('ec-'+id).value,
         et=document.getElementById('et-'+id).value.trim(),
@@ -375,17 +467,18 @@ async function saveEdit(id){
         eck=document.getElementById('eck-'+id).value.trim(),
         ecr=document.getElementById('ecr-'+id).value;
   const upd={};
-  if(er)upd.resp=er;if(ec)upd.cat=ec;if(et)upd.title=et;
+  if(!isAvDemand&&er)upd.resp=er;
+  if(ec)upd.cat=ec;if(et)upd.title=et;
   if(ed)upd.date=ed;if(epost)upd.post=epost;
   upd.clickup=eck||null;
   if(ecr!=='')upd.cred=parseInt(ecr)||null;
   setSyncing(true);
   const{error}=await sb.from('demandas').update(upd).eq('id',id);
-  if(error){setSyncing(false);showNotif('Erro ao atualizar: '+error.message,'error');return;}
-  showNotif('Demanda atualizada.');
+  if(error){setSyncing(false);showNotif('Erro: '+error.message,'error',isAvDemand);return;}
+  showNotif('Demanda atualizada.','success',isAvDemand);
 }
 
-// ── Mês ──────────────────────────────────────────────────────────
+// ── Mês ───────────────────────────────────────────────────────────
 function buildMonthOptions(){
   const now=new Date(),curYear=now.getFullYear(),curMonth=now.getMonth(),startYear=2026;
   const ySel=document.getElementById('year-filter');
@@ -403,7 +496,7 @@ function buildMonthOptions(){
 function applyMonthFilter(){
   const y=document.getElementById('year-filter').value,m=document.getElementById('month-filter').value;
   activeMonth=(y==='all'||m==='all')?'all':`${y}-${m}`;
-  renderAll();
+  renderAll();renderAV();
   if(document.getElementById('view-dashboard').classList.contains('active'))renderDashboard();
 }
 function matchMonth(d){
@@ -412,19 +505,22 @@ function matchMonth(d){
   return ref?ref.startsWith(activeMonth):false;
 }
 
-// ── Toggle concluídas ────────────────────────────────────────────
-function toggleDone(){
-  doneOpen=!doneOpen;
-  document.getElementById('done-body').classList.toggle('open',doneOpen);
-  document.getElementById('done-toggle-btn').textContent=doneOpen?'▲ Recolher':'▼ Expandir';
-  document.querySelector('.done-header').style.borderRadius=doneOpen?'10px 10px 0 0':'10px';
+// ── Toggle concluídas ─────────────────────────────────────────────
+function toggleDone(bodyId,btnId){
+  const body=document.getElementById(bodyId),btn=document.getElementById(btnId);
+  const open=body.classList.toggle('open');
+  btn.textContent=open?'▲ Recolher':'▼ Expandir';
+  body.closest('.done-section').querySelector('.done-header').style.borderRadius=open?'10px 10px 0 0':'10px';
 }
 
-// ── Render card ──────────────────────────────────────────────────
-function renderCard(d,showCredInput){
+// ── Render card ───────────────────────────────────────────────────
+function renderCard(d,showCredInput,avCard=false){
   const done=d.cred!==null,av=AV[d.resp]||['av-d','??'];
   const cu=d.clickup?`<a class="link-ext" href="${d.clickup}" target="_blank">↗ ClickUp</a>`:'';
-  return`<div class="demand-card${done?' done':''}">
+  const designOpts=DESIGN_TEAM.map(n=>`<option>${n}</option>`).join('');
+  const editResp=avCard?`<div class="field"><label>Responsável</label><input type="text" value="${d.resp}" disabled style="opacity:.6"></div>`
+    :`<div class="field"><label>Designer</label><select id="er-${d.id}"><option value="">Manter: ${d.resp}</option>${designOpts}</select></div>`;
+  return`<div class="demand-card${avCard?' av':''}${done?' done':''}">
     <div class="demand-top">
       <span class="demand-title">${d.title}</span>
       <div class="demand-actions">
@@ -445,11 +541,11 @@ function renderCard(d,showCredInput){
     ${showCredInput?`<div class="cred-input-wrap">
       <span class="cred-label">⬡ Inserir créditos utilizados</span>
       <input class="cred-input" type="number" id="ci-${d.id}" placeholder="Ex: 90" min="0">
-      <button class="btn sm primary" onclick="saveCred('${d.id}')">✓ Confirmar</button>
+      <button class="btn sm primary${avCard?' teal':''}" onclick="saveCred('${d.id}')">✓ Confirmar</button>
     </div>`:''}
     <div class="edit-panel" id="ep-${d.id}">
       <div class="form-grid" style="margin-bottom:12px">
-        <div class="field"><label>Designer</label><select id="er-${d.id}"><option value="">Manter: ${d.resp}</option><option>Derick</option><option>Alexandre</option><option>Pablo</option><option>Vinicius</option></select></div>
+        ${editResp}
         <div class="field"><label>Categoria</label><select id="ec-${d.id}"><option value="">Manter: ${CL[d.cat]||d.cat}</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select></div>
         <div class="field"><label>Título</label><input type="text" id="et-${d.id}" placeholder="Manter: ${d.title}"></div>
         <div class="field"><label>Créditos</label><input type="number" id="ecr-${d.id}" placeholder="${d.cred!==null?d.cred:'—'}" min="0"></div>
@@ -459,16 +555,17 @@ function renderCard(d,showCredInput){
       <div class="field" style="margin-bottom:14px"><label>Link ClickUp</label><input type="text" id="eck-${d.id}" value="${d.clickup||''}" placeholder="https://app.clickup.com/..."></div>
       <div class="form-actions">
         <button class="btn sm" onclick="toggleEdit('${d.id}')">Cancelar</button>
-        <button class="btn sm primary" onclick="saveEdit('${d.id}')">✓ Salvar alterações</button>
+        <button class="btn sm primary${avCard?' teal':''}" onclick="saveEdit('${d.id}')">✓ Salvar</button>
       </div>
     </div>
   </div>`;
 }
 
-// ── Render geral ─────────────────────────────────────────────────
+// ── Render Design ─────────────────────────────────────────────────
 function renderAll(){
-  const pending=demands.filter(d=>d.cred===null&&matchMonth(d));
-  const done=demands.filter(d=>d.cred!==null&&matchMonth(d));
+  const all=demands.filter(d=>isDesign(d)&&matchMonth(d));
+  const pending=all.filter(d=>d.cred===null);
+  const done=all.filter(d=>d.cred!==null);
   const filtPending=filterResp==='all'?pending:pending.filter(d=>d.resp===filterResp);
   document.getElementById('demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
   document.getElementById('demand-list').innerHTML=filtPending.length?filtPending.map(d=>renderCard(d,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
@@ -477,9 +574,32 @@ function renderAll(){
   document.getElementById('done-list').innerHTML=filtDone.length?filtDone.map(d=>renderCard(d,false)).join(''):'<div class="empty">Nenhuma demanda concluída encontrada.</div>';
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────
+// ── Render Audiovisual ────────────────────────────────────────────
+function renderAV(){
+  const all=demands.filter(d=>isAV(d)&&matchMonth(d));
+  const pending=all.filter(d=>d.cred===null);
+  const done=all.filter(d=>d.cred!==null);
+  document.getElementById('av-demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
+  document.getElementById('av-demand-list').innerHTML=pending.length?pending.map(d=>renderCard(d,true,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
+  document.getElementById('av-done-count').textContent=String(done.length);
+  document.getElementById('av-done-list').innerHTML=done.length?done.map(d=>renderCard(d,false,true)).join(''):'<div class="empty">Nenhuma demanda concluída ainda.</div>';
+  // Mini dashboard AV
+  const total=done.reduce((a,d)=>a+d.cred,0),avg=done.length?Math.round(total/done.length):0;
+  document.getElementById('av-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent-teal">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div>
+    <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">concluídas</div></div>
+    <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div>
+    <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">${pending.length}</div><div class="kpi-sub">aguardando créditos</div></div>`;
+  const byCat={};done.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+d.cred});
+  const cats=Object.keys(byCat),cv=cats.map(c=>byCat[c]),cc=cats.map(c=>CC[c]||'#999');
+  document.getElementById('av-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${fmt(cv[i])}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
+  if(avCatCI)avCatCI.destroy();
+  if(cats.length){avCatCI=new Chart(document.getElementById('av-cat-chart'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
+}
+
+// ── Dashboard Design ──────────────────────────────────────────────
 function renderDashboard(){
-  const done=demands.filter(d=>d.cred!==null&&matchMonth(d));
+  const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d));
   const filt=done.filter(d=>(ddResp==='all'||d.resp===ddResp)&&(ddCat==='all'||d.cat===ddCat));
   const total=filt.reduce((a,d)=>a+d.cred,0),avg=filt.length?Math.round(total/filt.length):0;
   const byResp={};filt.forEach(d=>{byResp[d.resp]=(byResp[d.resp]||0)+d.cred});
@@ -487,17 +607,17 @@ function renderDashboard(){
     <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div>
     <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">${filt.length}</div><div class="kpi-sub">concluídas</div></div>
     <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div>
-    <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">${demands.filter(d=>d.cred===null).length}</div><div class="kpi-sub">aguardando créditos</div></div>`;
+    <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">${demands.filter(d=>isDesign(d)&&d.cred===null).length}</div><div class="kpi-sub">aguardando créditos</div></div>`;
   const byCat={};filt.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+d.cred});
   const cats=Object.keys(byCat),cv=cats.map(c=>byCat[c]),cc=cats.map(c=>CC[c]||'#999');
   document.getElementById('d-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${fmt(cv[i])}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(catCI)catCI.destroy();
   if(cats.length){catCI=new Chart(document.getElementById('d-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
-  const rn=['Derick','Alexandre','Pablo','Vinicius'],rv=rn.map(n=>byResp[n]||0),rcolors=rn.map(n=>RC[n]);
+  const rn=DESIGN_TEAM,rv=rn.map(n=>byResp[n]||0),rcolors=rn.map(n=>RC[n]);
   document.getElementById('d-leg-resp').innerHTML=rn.filter((_,i)=>rv[i]>0).map((n,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${rcolors[i]}"></span>${n} ${fmt(rv[i])}</span>`).join('')||'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(respCI)respCI.destroy();
   respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:rn,datasets:[{data:rv,backgroundColor:rcolors,borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}},scales:{x:{grid:{display:false},ticks:{color:'#999',font:{size:11}},border:{color:'#e4e4e0'}},y:{grid:{color:'#f0f0ee'},ticks:{color:'#bbb',font:{size:10}},border:{color:'transparent'},beginAtZero:true}}}});
-  const allR={Derick:0,Alexandre:0,Pablo:0,Vinicius:0},allC={Derick:0,Alexandre:0,Pablo:0,Vinicius:0};
+  const allR={},allC={};DESIGN_TEAM.forEach(n=>{allR[n]=0;allC[n]=0;});
   done.forEach(d=>{allR[d.resp]=(allR[d.resp]||0)+d.cred;allC[d.resp]=(allC[d.resp]||0)+1});
   const sorted=Object.entries(allR).sort((a,b)=>b[1]-a[1]),maxR=sorted[0]&&sorted[0][1]>0?sorted[0][1]:1;
   document.getElementById('d-ranking').innerHTML=sorted.some(([,v])=>v>0)?sorted.map(([n,v])=>`<div class="prog-row"><span class="prog-name">${n}</span><div class="prog-track"><div class="prog-fill" style="width:${Math.round(v/maxR*100)}%;background:${RC[n]}"></div></div><span class="prog-val">${fmt(v)}</span><span class="prog-count">${allC[n]} tasks</span></div>`).join(''):'<div class="empty">Nenhuma entrega concluída ainda.</div>';
