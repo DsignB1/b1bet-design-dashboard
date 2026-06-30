@@ -310,9 +310,14 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
       </div>
       <div class="card">
         <div class="card-title">Demandas por categoria</div>
-        <div class="legend" id="d-leg-resp"></div>
-        <div style="position:relative;width:100%;height:180px"><canvas id="d-resp"></canvas></div>
+        <div class="legend" id="d-leg-cat-count"></div>
+        <div style="position:relative;width:100%;height:180px"><canvas id="d-cat-count"></canvas></div>
       </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Demandas por dia</div>
+      <div class="legend" id="d-leg-resp"></div>
+      <div style="position:relative;width:100%;height:180px"><canvas id="d-resp"></canvas></div>
     </div>
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Ranking — créditos acumulados</div>
@@ -338,7 +343,7 @@ const AV={Derick:['av-d','DE'],Alexandre:['av-a','AL'],Pablo:['av-p','PA'],Vinic
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 let demands=[],filterResp='all',filterDoneResp='all',ddResp='all',ddCat='all';
-let catCI=null,respCI=null,avCatCI=null;
+let catCI=null,catCountCI=null,respCI=null,avCatCI=null;
 let modalOpen=false,modalAvOpen=false,activeMonth='all';
 let doneStates={};
 
@@ -617,6 +622,12 @@ function renderDashboard(){
   document.getElementById('d-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${fmt(cv[i])}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(catCI)catCI.destroy();
   if(cats.length){catCI=new Chart(document.getElementById('d-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
+  // Donut: demandas por categoria (contagem)
+  const byCatCount={};filt.forEach(d=>{byCatCount[d.cat]=(byCatCount[d.cat]||0)+1});
+  const catsC=Object.keys(byCatCount),cvC=catsC.map(c=>byCatCount[c]),ccC=catsC.map(c=>CC[c]||'#999');
+  document.getElementById('d-leg-cat-count').innerHTML=catsC.length?catsC.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${ccC[i]}"></span>${CL[c]||c} ${cvC[i]}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
+  if(catCountCI)catCountCI.destroy();
+  if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
   // Gráfico: Demandas por categoria empilhadas por dia
   const allDemandas=demands.filter(d=>isDesign(d)&&matchMonth(d)&&(ddResp==='all'||d.resp===ddResp));
   const allDates=[...new Set(allDemandas.map(d=>d.date).filter(Boolean))].sort();
