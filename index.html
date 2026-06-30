@@ -280,6 +280,22 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 
   <!-- ABA DASHBOARD (Design) -->
   <div class="view" id="view-dashboard">
+    <div class="filters" id="dash-filters" style="margin-bottom:16px">
+      <span class="filter-label">Designer</span>
+      <div class="chip active" data-df="dresp" data-dv="all">Todos</div>
+      <div class="chip" data-df="dresp" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+      <div class="chip" data-df="dresp" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
+      <div class="chip" data-df="dresp" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
+      <div class="chip" data-df="dresp" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
+      <div class="divider-v"></div>
+      <span class="filter-label">Categoria</span>
+      <div class="chip active" data-df="dcat" data-dv="all">Todas</div>
+      <div class="chip" data-df="dcat" data-dv="CRM">CRM</div>
+      <div class="chip" data-df="dcat" data-dv="ADS">ADS</div>
+      <div class="chip" data-df="dcat" data-dv="REDES">Redes</div>
+      <div class="chip" data-df="dcat" data-dv="INTERNO">Interno</div>
+      <div class="chip" data-df="dcat" data-dv="OUTROS">Outros</div>
+    </div>
     <div class="kpi-row" id="d-kpis">
       <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent">0</div><div class="kpi-sub">total confirmado</div></div>
       <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">0</div><div class="kpi-sub">concluídas</div></div>
@@ -301,28 +317,6 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
     <div class="card" style="margin-bottom:16px">
       <div class="card-title">Ranking — créditos acumulados</div>
       <div id="d-ranking"><div class="empty">Nenhuma entrega concluída ainda.</div></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Entregas concluídas</div>
-      <div class="filters" id="dash-filters" style="margin-top:8px">
-        <span class="filter-label">Designer</span>
-        <div class="chip active" data-df="dresp" data-dv="all">Todos</div>
-        <div class="chip" data-df="dresp" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
-        <div class="chip" data-df="dresp" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-        <div class="chip" data-df="dresp" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
-        <div class="chip" data-df="dresp" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
-        <div class="divider-v"></div>
-        <span class="filter-label">Categoria</span>
-        <div class="chip active" data-df="dcat" data-dv="all">Todas</div>
-        <div class="chip" data-df="dcat" data-dv="CRM">CRM</div>
-        <div class="chip" data-df="dcat" data-dv="ADS">ADS</div>
-        <div class="chip" data-df="dcat" data-dv="REDES">Redes</div>
-        <div class="chip" data-df="dcat" data-dv="INTERNO">Interno</div>
-        <div class="chip" data-df="dcat" data-dv="OUTROS">Outros</div>
-      </div>
-      <div id="d-table"><div class="empty">Nenhuma entrega encontrada.</div></div>
-      <div class="sep"></div>
-      <div class="total-row"><span class="total-label" id="d-total-label">0 entregas</span><span class="total-val" id="d-total-val">0 créditos</span></div>
     </div>
   </div>
 </div>
@@ -656,9 +650,6 @@ function renderDashboard(){
   done.forEach(d=>{allR[d.resp]=(allR[d.resp]||0)+d.cred;allC[d.resp]=(allC[d.resp]||0)+1});
   const sorted=Object.entries(allR).sort((a,b)=>b[1]-a[1]),maxR=sorted[0]&&sorted[0][1]>0?sorted[0][1]:1;
   document.getElementById('d-ranking').innerHTML=sorted.some(([,v])=>v>0)?sorted.map(([n,v])=>`<div class="prog-row"><span class="prog-name">${n}</span><div class="prog-track"><div class="prog-fill" style="width:${Math.round(v/maxR*100)}%;background:${RC[n]}"></div></div><span class="prog-val">${fmt(v)}</span><span class="prog-count">${allC[n]} tasks</span></div>`).join(''):'<div class="empty">Nenhuma entrega concluída ainda.</div>';
-  document.getElementById('d-table').innerHTML=filt.length?filt.map(d=>{const av=AV[d.resp]||['av-d','??'];return`<div class="table-row"><span style="color:var(--text3);width:44px;flex-shrink:0">${fmtDate(d.date)}</span><span class="chip-person" style="width:100px;flex-shrink:0"><span class="avatar ${av[0]}">${av[1]}</span><span style="color:var(--text2)">${d.resp}</span></span><span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title}</span><span class="badge ${CB[d.cat]||'b-outros'}" style="margin:0 8px;flex-shrink:0">${CL[d.cat]||d.cat}</span><span style="color:var(--orange);font-weight:500;flex-shrink:0">${fmt(d.cred)} pts</span></div>`}).join(''):'<div class="empty">Nenhuma entrega encontrada.</div>';
-  document.getElementById('d-total-label').textContent=`${filt.length} entregas`;
-  document.getElementById('d-total-val').textContent=`${fmt(total)} créditos`;
 }
 
 // ── Filtros ───────────────────────────────────────────────────────
