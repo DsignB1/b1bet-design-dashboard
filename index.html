@@ -625,20 +625,35 @@ function renderDashboard(){
     stack:'stack'
   })).filter(ds=>ds.data.some(v=>v>0));
   document.getElementById('d-leg-resp').innerHTML=stackedDatasets.length?stackedDatasets.map(ds=>`<span class="leg-item"><span class="leg-dot" style="background:${ds.backgroundColor}"></span>${ds.label}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
-  const totalPlugin={id:'totalLabel',afterDatasetsDraw(chart){
-    const{ctx}=chart;
-    chart.data.labels.forEach((_,i)=>{
-      const total=chart.data.datasets.reduce((s,ds)=>s+(ds.data[i]||0),0);
-      if(!total)return;
-      const meta=chart.getDatasetMeta(chart.data.datasets.length-1);
-      if(!meta.data[i])return;
-      const bar=meta.data[i];
-      ctx.save();ctx.fillStyle='#555';ctx.font='bold 11px system-ui';ctx.textAlign='center';
-      ctx.fillText(total,bar.x,bar.y-6);ctx.restore();
+  const stackedPlugin={id:'stackedLabels',afterDatasetsDraw(chart){
+    const{ctx,data}=chart;
+    // Números dentro de cada segmento
+    data.datasets.forEach((ds,di)=>{
+      const meta=chart.getDatasetMeta(di);
+      meta.data.forEach((bar,i)=>{
+        const val=ds.data[i];if(!val)return;
+        const segH=Math.abs(bar.base-bar.y);if(segH<14)return;
+        const cy=(bar.y+bar.base)/2;
+        ctx.save();ctx.fillStyle='rgba(255,255,255,0.92)';ctx.font='bold 10px system-ui';
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText(val,bar.x,cy);ctx.restore();
+      });
+    });
+    // Total no topo
+    data.labels.forEach((_,i)=>{
+      const total=data.datasets.reduce((s,ds)=>s+(ds.data[i]||0),0);if(!total)return;
+      let topBar=null;
+      for(let di=data.datasets.length-1;di>=0;di--){
+        if(data.datasets[di].data[i]>0){topBar=chart.getDatasetMeta(di).data[i];break;}
+      }
+      if(!topBar)return;
+      ctx.save();ctx.fillStyle='#333';ctx.font='bold 11px system-ui';
+      ctx.textAlign='center';ctx.textBaseline='bottom';
+      ctx.fillText(total,topBar.x,topBar.y-3);ctx.restore();
     });
   }};
   if(respCI)respCI.destroy();
-  respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[totalPlugin],options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:'#999',font:{size:10}},border:{color:'#e4e4e0'},stacked:true},y:{grid:{color:'#f0f0ee'},ticks:{color:'#bbb',font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
+  respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:'#999',font:{size:10}},border:{color:'#e4e4e0'},stacked:true},y:{grid:{color:'#f0f0ee'},ticks:{color:'#bbb',font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
   const allR={},allC={};DESIGN_TEAM.forEach(n=>{allR[n]=0;allC[n]=0;});
   done.forEach(d=>{allR[d.resp]=(allR[d.resp]||0)+d.cred;allC[d.resp]=(allC[d.resp]||0)+1});
   const sorted=Object.entries(allR).sort((a,b)=>b[1]-a[1]),maxR=sorted[0]&&sorted[0][1]>0?sorted[0][1]:1;
