@@ -646,10 +646,27 @@ function renderDashboard(){
   }};
   if(respCI)respCI.destroy();
   respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:'#999',font:{size:10}},border:{color:'#e4e4e0'},stacked:true},y:{grid:{color:'#f0f0ee'},ticks:{color:'#bbb',font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
-  const allR={},allC={};DESIGN_TEAM.forEach(n=>{allR[n]=0;allC[n]=0;});
-  done.forEach(d=>{allR[d.resp]=(allR[d.resp]||0)+d.cred;allC[d.resp]=(allC[d.resp]||0)+1});
-  const sorted=Object.entries(allR).sort((a,b)=>b[1]-a[1]),maxR=sorted[0]&&sorted[0][1]>0?sorted[0][1]:1;
-  document.getElementById('d-ranking').innerHTML=sorted.some(([,v])=>v>0)?sorted.map(([n,v])=>`<div class="prog-row"><span class="prog-name">${n}</span><div class="prog-track"><div class="prog-fill" style="width:${Math.round(v/maxR*100)}%;background:${RC[n]}"></div></div><span class="prog-val">${fmt(v)}</span><span class="prog-count">${allC[n]} tasks</span></div>`).join(''):'<div class="empty">Nenhuma entrega concluída ainda.</div>';
+  const CATS_ORDER=['CRM','ADS','REDES','INTERNO','OUTROS'];
+  const dData={};
+  DESIGN_TEAM.forEach(n=>{dData[n]={total:0,cred:0,cats:{}};CATS_ORDER.forEach(c=>dData[n].cats[c]=0);});
+  done.forEach(d=>{if(dData[d.resp]){dData[d.resp].total++;dData[d.resp].cred+=(d.cred||0);dData[d.resp].cats[d.cat]=(dData[d.resp].cats[d.cat]||0)+1;}});
+  const rankSorted=DESIGN_TEAM.map(n=>[n,dData[n]]).sort((a,b)=>b[1].total-a[1].total).filter(([,d])=>d.total>0);
+  const maxDem=rankSorted[0]?rankSorted[0][1].total:1;
+  document.getElementById('d-ranking').innerHTML=rankSorted.length?rankSorted.map(([name,data])=>{
+    const barW=Math.round(data.total/maxDem*100);
+    const segs=CATS_ORDER.filter(cat=>data.cats[cat]>0).map(cat=>{
+      const sw=Math.round(data.cats[cat]/data.total*100);
+      return`<div style="width:${sw}%;background:${CC[cat]};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;min-width:0">${data.cats[cat]}</div>`;
+    }).join('');
+    return`<div class="prog-row">
+      <span class="prog-name">${name}</span>
+      <div style="flex:1;height:30px;background:var(--bg);border-radius:6px;overflow:hidden;border:0.5px solid var(--border);display:flex">
+        <div style="width:${barW}%;display:flex;height:100%;border-radius:6px;overflow:hidden">${segs}</div>
+      </div>
+      <span style="font-size:12px;color:var(--text2);min-width:50px;text-align:right;flex-shrink:0">${data.total} dem.</span>
+      <span style="font-size:13px;font-weight:500;color:var(--orange);min-width:70px;text-align:right;flex-shrink:0">${fmt(data.cred)} cred.</span>
+    </div>`;
+  }).join(''):'<div class="empty">Nenhuma entrega concluída ainda.</div>';
 }
 
 // ── Filtros ───────────────────────────────────────────────────────
