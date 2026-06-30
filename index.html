@@ -76,8 +76,8 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .b-av{background:var(--teal-light);color:var(--teal)}
 .demand-info{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text3);flex-wrap:wrap}
 .avatar{width:24px;height:24px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
-.av-d{background:#ddeeff;color:#1a5fa8}.av-a{background:#e8f5e0;color:#2e6b18}
-.av-p{background:var(--orange-light);color:var(--orange)}.av-v{background:#fce8f5;color:#8b3070}
+.av-d{background:#fce4f3;color:#e91e8c}.av-a{background:#fff8e1;color:#b07800}
+.av-p{background:#ffebee;color:#e53935}.av-v{background:#e8eaf6;color:#5c6bc0}
 .av-e{background:var(--teal-light);color:var(--teal)}
 .cred-input-wrap{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:0.5px solid var(--border)}
 .cred-label{font-size:12px;color:var(--orange);flex:1}
@@ -187,10 +187,10 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
     <div class="filters" id="demand-filters">
       <span class="filter-label">Designer</span>
       <div class="chip active" data-dv="all">Todos</div>
-      <div class="chip" data-dv="Derick"><span class="dot" style="background:#4a90d9"></span>Derick</div>
-      <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#3a9e50"></span>Alexandre</div>
+      <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+      <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
       <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
-      <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#a040a0"></span>Vinicius</div>
+      <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
     </div>
     <div class="demand-list" id="demand-list"><div class="loading">Carregando demandas...</div></div>
     <div class="done-section">
@@ -205,10 +205,10 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
         <div class="filters" id="done-filters" style="margin-bottom:14px;margin-top:4px">
           <span class="filter-label">Designer</span>
           <div class="chip active" data-dv="all">Todos</div>
-          <div class="chip" data-dv="Derick"><span class="dot" style="background:#4a90d9"></span>Derick</div>
-          <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#3a9e50"></span>Alexandre</div>
+          <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+          <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
           <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
-          <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#a040a0"></span>Vinicius</div>
+          <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
         </div>
         <div class="demand-list" id="done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
       </div>
@@ -307,10 +307,10 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
       <div class="filters" id="dash-filters" style="margin-top:8px">
         <span class="filter-label">Designer</span>
         <div class="chip active" data-df="dresp" data-dv="all">Todos</div>
-        <div class="chip" data-df="dresp" data-dv="Derick"><span class="dot" style="background:#4a90d9"></span>Derick</div>
-        <div class="chip" data-df="dresp" data-dv="Alexandre"><span class="dot" style="background:#3a9e50"></span>Alexandre</div>
+        <div class="chip" data-df="dresp" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+        <div class="chip" data-df="dresp" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
         <div class="chip" data-df="dresp" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
-        <div class="chip" data-df="dresp" data-dv="Vinicius"><span class="dot" style="background:#a040a0"></span>Vinicius</div>
+        <div class="chip" data-df="dresp" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
         <div class="divider-v"></div>
         <span class="filter-label">Categoria</span>
         <div class="chip active" data-df="dcat" data-dv="all">Todas</div>
@@ -335,7 +335,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ── Constantes ────────────────────────────────────────────────────
 const DESIGN_TEAM = ['Derick','Alexandre','Pablo','Vinicius'];
-const RC={Derick:'#4a90d9',Alexandre:'#3a9e50',Pablo:'#F5822D',Vinicius:'#a040a0',Eduardo:'#0e7490'};
+const RC={Derick:'#e91e8c',Alexandre:'#f0a500',Pablo:'#e53935',Vinicius:'#5c6bc0',Eduardo:'#0e7490'};
 const CC={CRM:'#4a90d9',ADS:'#3a9e50',REDES:'#e08020',INTERNO:'#999',OUTROS:'#7040b0'};
 const CC_AV={CRM:'#0e7490',ADS:'#0891b2',REDES:'#06b6d4',INTERNO:'#67c4d8',OUTROS:'#2a9ab5'};
 const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-outros'};
