@@ -564,9 +564,8 @@ function renderCard(d,showCredInput,avCard=false){
 
 // ── Render Design ─────────────────────────────────────────────────
 function renderAll(){
-  const all=demands.filter(d=>isDesign(d)&&matchMonth(d));
-  const pending=all.filter(d=>d.cred===null);
-  const done=all.filter(d=>d.cred!==null);
+  const pending=demands.filter(d=>isDesign(d)&&d.cred===null);
+  const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d));
   const filtPending=filterResp==='all'?pending:pending.filter(d=>d.resp===filterResp);
   document.getElementById('demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
   document.getElementById('demand-list').innerHTML=filtPending.length?filtPending.map(d=>renderCard(d,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
@@ -577,9 +576,8 @@ function renderAll(){
 
 // ── Render Audiovisual ────────────────────────────────────────────
 function renderAV(){
-  const all=demands.filter(d=>isAV(d)&&matchMonth(d));
-  const pending=all.filter(d=>d.cred===null);
-  const done=all.filter(d=>d.cred!==null);
+  const pending=demands.filter(d=>isAV(d)&&d.cred===null);
+  const done=demands.filter(d=>isAV(d)&&d.cred!==null&&matchMonth(d));
   document.getElementById('av-demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
   document.getElementById('av-demand-list').innerHTML=pending.length?pending.map(d=>renderCard(d,true,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
   document.getElementById('av-done-count').textContent=String(done.length);
