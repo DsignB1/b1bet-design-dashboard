@@ -21,14 +21,24 @@
   --teal:#F5822D;--teal-light:#fff3ec;
 }
 html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,sans-serif}
-.app{background:var(--bg);min-height:100vh}
+.app{background:var(--bg);height:100vh;overflow:hidden;display:flex;flex-direction:column}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:0.5px solid var(--border);background:#fff;position:sticky;top:0;z-index:10}
 .tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;border:0.5px solid var(--border)}
 .tab{padding:7px 20px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text3);border:none;background:transparent;transition:all .15s;font-family:inherit}
 .tab.active{background:var(--orange);color:#fff;font-weight:500}
 .tab.active.av-tab{background:var(--teal)}
 .tab:hover:not(.active){color:var(--text2)}
-.view{padding:24px 28px;display:none}.view.active{display:block}
+.view{padding:24px 28px;display:none}.view.active{display:block;flex:1;overflow-y:auto}
+#view-dashboard.active{display:grid;overflow:hidden;grid-template-rows:auto auto 1fr 1fr 1fr;gap:10px;padding:16px 28px}
+#view-dashboard>*{min-height:0}
+#view-dashboard .kpi-row{margin-bottom:0}
+#view-dashboard .charts-row{margin-bottom:0;height:100%;min-height:0}
+#view-dashboard .card{display:flex;flex-direction:column}
+#view-dashboard .legend{flex-shrink:0}
+#view-dashboard .card-title{flex-shrink:0}
+.dash-canvas{flex:1;min-height:0;position:relative;width:100%}
+.dash-card{margin-bottom:0!important}
+#view-dashboard #d-ranking{flex:1;overflow-y:auto;min-height:0}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;border:0.5px solid var(--border2);background:#fff;color:var(--text2);font-family:inherit;transition:all .15s;line-height:1}
@@ -149,15 +159,15 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
         <select id="month-filter" onchange="applyMonthFilter()" style="background:#fff;border:0.5px solid var(--border2);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;cursor:pointer"></select>
       </div>
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('demandas',this)">Design</button>
-        <button class="tab" onclick="switchTab('dashboard',this)">Dashboard Design</button>
+        <button class="tab" onclick="switchTab('demandas',this)">Design</button>
+        <button class="tab active" onclick="switchTab('dashboard',this)">Dashboard Design</button>
         <button class="tab" onclick="switchTab('audiovisual',this)">Audiovisual</button>
       </div>
     </div>
   </div>
 
   <!-- ABA DESIGN -->
-  <div class="view active" id="view-demandas">
+  <div class="view" id="view-demandas">
     <div class="notif" id="notif"><span id="notif-msg"></span></div>
     <div class="modal" id="modal-new">
       <div class="modal-title">
@@ -280,7 +290,7 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
   </div>
 
   <!-- ABA DASHBOARD (Design) -->
-  <div class="view" id="view-dashboard">
+  <div class="view active" id="view-dashboard">
     <div class="filters" id="dash-filters" style="margin-bottom:16px">
       <span class="filter-label">Designer</span>
       <div class="chip active" data-df="dresp" data-dv="all">Todos</div>
@@ -307,20 +317,20 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
       <div class="card">
         <div class="card-title">Créditos por categoria</div>
         <div class="legend" id="d-leg-cat"></div>
-        <div style="position:relative;width:100%;height:180px"><canvas id="d-cat"></canvas></div>
+        <div class="dash-canvas"><canvas id="d-cat"></canvas></div>
       </div>
       <div class="card">
         <div class="card-title">Demandas por categoria</div>
         <div class="legend" id="d-leg-cat-count"></div>
-        <div style="position:relative;width:100%;height:180px"><canvas id="d-cat-count"></canvas></div>
+        <div class="dash-canvas"><canvas id="d-cat-count"></canvas></div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:16px">
+    <div class="card dash-card">
       <div class="card-title">Demandas por dia</div>
       <div class="legend" id="d-leg-resp"></div>
-      <div style="position:relative;width:100%;height:180px"><canvas id="d-resp"></canvas></div>
+      <div class="dash-canvas"><canvas id="d-resp"></canvas></div>
     </div>
-    <div class="card" style="margin-bottom:16px">
+    <div class="card dash-card">
       <div class="card-title">Ranking — créditos acumulados</div>
       <div id="d-ranking"><div class="empty">Nenhuma entrega concluída ainda.</div></div>
     </div>
