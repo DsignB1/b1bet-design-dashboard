@@ -630,7 +630,7 @@ function renderDashboard(){
   if(catCountCI)catCountCI.destroy();
   if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
   // Gráfico: Demandas por categoria empilhadas por dia
-  const allDemandas=demands.filter(d=>isDesign(d)&&matchMonth(d)&&(ddResp==='all'||d.resp===ddResp));
+  const allDemandas=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d)&&(ddResp==='all'||d.resp===ddResp));
   const allDates=[...new Set(allDemandas.map(d=>d.date).filter(Boolean))].sort();
   const CATS=['CRM','ADS','REDES','INTERNO','OUTROS'];
   const stackedDatasets=CATS.map(cat=>({
