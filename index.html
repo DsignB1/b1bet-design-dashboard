@@ -1,64 +1,93 @@
 
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard B1 - Design Performance [TESTE]</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --orange:#F5822D;--orange-light:#fff3ec;--orange-mid:#fde0cc;
-  --bg:#f5f5f3;--card:#ffffff;--card2:#f9f9f7;
+  --bg:#f0f0ee;--card:#ffffff;--card2:#f5f5f3;
   --border:#e4e4e0;--border2:#d0d0cb;
-  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --text:#1a1a1a;--text2:#555;--text3:#999;
   --green:#2e7d52;--green-light:#edf7f2;
   --red:#b83232;--red-light:#fdf0f0;
   --blue:#1a5fa8;--blue-light:#eaf2fb;
   --purple:#7040b0;--purple-light:#f3eeff;
   --teal:#F5822D;--teal-light:#fff3ec;
 }
-html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system-ui,-apple-system,sans-serif}
-.app{background:var(--bg);min-height:100vh}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:0.5px solid var(--border);background:#fff;position:sticky;top:0;z-index:10}
-.tabs{display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;border:0.5px solid var(--border)}
-.tab{padding:7px 20px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text3);border:none;background:transparent;transition:all .15s;font-family:inherit}
-.tab.active{background:var(--orange);color:#fff;font-weight:500}
-.tab.active.av-tab{background:var(--teal)}
-.tab:hover:not(.active){color:var(--text2)}
-.view{padding:24px 28px;display:none}.view.active{display:block}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;border:0.5px solid var(--border2);background:#fff;color:var(--text2);font-family:inherit;transition:all .15s;line-height:1}
+[data-theme="dark"]{
+  --bg:#13131a;--card:#1e1e28;--card2:#1a1a22;
+  --border:#2a2a38;--border2:#363648;
+  --text:#eeeef2;--text2:#a0a0b8;--text3:#58586a;
+  --orange-light:#2a1408;--green-light:#0a2016;--red-light:#1e0c0c;
+  --blue-light:#0c1628;--purple-light:#160e26;--teal-light:#0a1e2c;
+}
+html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
+.app{display:flex;height:100vh;overflow:hidden;background:var(--bg)}
+
+/* ── Sidebar ── */
+.sidebar{width:220px;flex-shrink:0;background:#18181c;display:flex;flex-direction:column;height:100vh}
+.sidebar-logo{padding:22px 20px 18px}
+.logo-icon{background:var(--orange);border-radius:10px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:18px;font-family:'Plus Jakarta Sans',sans-serif}
+.sidebar-filters{padding:0 14px 16px;display:flex;flex-direction:column;gap:8px;border-bottom:0.5px solid #2a2a38}
+.sidebar-select{background:#242430;border:0.5px solid #2e2e3e;border-radius:8px;padding:8px 12px;color:#c0c0d0;font-size:12px;font-family:'Inter',sans-serif;outline:none;cursor:pointer;width:100%}
+.sidebar-select:focus{border-color:var(--orange)}
+.sidebar-nav{flex:1;padding:14px 10px;display:flex;flex-direction:column;gap:4px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:8px;font-size:13px;cursor:pointer;color:#787888;border:none;background:transparent;transition:all .15s;font-family:'Inter',sans-serif;text-align:left;line-height:1}
+.nav-item:hover{color:#c0c0d0;background:rgba(255,255,255,.05)}
+.nav-item.active{color:#fff;background:var(--orange);font-weight:600}
+.sidebar-footer{padding:14px 20px;border-top:0.5px solid #2a2a38}
+
+/* ── Main ── */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column;background:var(--bg)}
+.main-header{display:flex;justify-content:flex-end;align-items:center;padding:9px 24px;flex-shrink:0;border-bottom:0.5px solid var(--border)}
+.theme-btns{display:flex;gap:3px;background:var(--card);border-radius:8px;padding:3px;border:0.5px solid var(--border)}
+.theme-btn{padding:6px 14px;border-radius:6px;font-size:12px;cursor:pointer;border:none;background:transparent;color:var(--text2);font-family:'Inter',sans-serif;display:flex;align-items:center;gap:5px;transition:all .15s;line-height:1}
+.theme-btn.active{background:var(--orange);color:#fff;font-weight:500}
+.view{padding:20px 24px 28px;display:none;overflow-y:auto;height:calc(100vh - 45px)}
+.view.active{display:block}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:7px;font-size:13px;cursor:pointer;border:0.5px solid var(--border2);background:var(--card);color:var(--text2);font-family:'Inter',sans-serif;transition:all .15s;line-height:1}
 .btn:hover{border-color:var(--orange);color:var(--orange)}
 .btn.primary{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:500}
 .btn.primary:hover{background:#e07020}
 .btn.primary.teal{background:var(--teal);border-color:var(--teal)}
-.btn.primary.teal:hover{background:#0a6070}
+.btn.primary.teal:hover{background:#d07020}
 .btn.danger{border-color:#e0b0b0;color:var(--red);background:var(--red-light)}
 .btn.danger:hover{background:#fce0e0;border-color:var(--red)}
 .btn.sm{padding:5px 11px;font-size:12px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-.modal{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:22px;display:none;margin-bottom:18px;box-shadow:0 4px 24px rgba(0,0,0,.07)}
+
+/* ── Modal / Forms ── */
+.modal{background:var(--card);border:0.5px solid var(--border);border-radius:12px;padding:22px;display:none;margin-bottom:18px;box-shadow:0 4px 24px rgba(0,0,0,.15)}
 .modal.open{display:block}
 .modal-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-.field input,.field select{background:#fff;border:0.5px solid var(--border2);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;font-family:inherit;outline:none;width:100%}
+.field input,.field select{background:var(--card);border:0.5px solid var(--border2);border-radius:7px;padding:9px 11px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;width:100%}
 .field input:focus,.field select:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-light)}
 .form-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ── Filters / Chips ── */
 .filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
 .filter-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;flex-shrink:0}
-.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border);background:#fff;color:var(--text3);transition:all .15s;user-select:none}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border);background:var(--card);color:var(--text3);transition:all .15s;user-select:none}
 .chip:hover{border-color:var(--orange);color:var(--orange)}
 .chip.active{background:var(--orange);border-color:var(--orange);color:#fff;font-weight:500}
 .chip .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .divider-v{width:0.5px;height:18px;background:var(--border2);margin:0 4px;flex-shrink:0}
+
+/* ── Demand cards ── */
 .demand-list{display:flex;flex-direction:column;gap:10px}
-.demand-card{background:#fff;border:0.5px solid var(--border);border-radius:10px;padding:16px 18px;transition:border-color .15s;border-left:3px solid var(--orange)}
+.demand-card{background:var(--card);border:0.5px solid var(--border);border-radius:10px;padding:16px 18px;transition:border-color .15s;border-left:3px solid var(--orange)}
 .demand-card.done{border-left:3px solid var(--green)}
 .demand-card.av{border-left:3px solid var(--teal)}
 .demand-card.av.done{border-left:3px solid var(--green)}
@@ -81,54 +110,58 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 .av-e{background:var(--teal-light);color:var(--teal)}
 .cred-input-wrap{display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:0.5px solid var(--border)}
 .cred-label{font-size:12px;color:var(--orange);flex:1}
-.cred-input{background:#fff;border:0.5px solid var(--orange-mid);border-radius:6px;padding:7px 11px;color:var(--text);font-size:13px;width:90px;font-family:inherit;outline:none}
+.cred-input{background:var(--card);border:0.5px solid var(--orange-mid);border-radius:6px;padding:7px 11px;color:var(--text);font-size:13px;width:90px;font-family:'Inter',sans-serif;outline:none}
 .cred-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-light)}
 .edit-panel{background:var(--card2);border:0.5px solid var(--border);border-radius:8px;padding:16px;margin-top:11px;display:none}
 .edit-panel.open{display:block}
 .done-section{margin-top:28px}
-.done-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border:0.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.done-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--card);border:0.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
 .done-header:hover{border-color:var(--border2)}
 .done-header-left{display:flex;align-items:center;gap:10px}
 .done-badge{background:var(--green-light);color:var(--green);font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px}
-.done-body{background:#fff;border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:16px;display:none}
+.done-body{background:var(--card);border:0.5px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:16px;display:none}
 .done-body.open{display:block}
+
+/* ── KPIs ── */
 .kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px}
-.kpi{background:#fff;border-radius:10px;padding:16px 18px;border:0.5px solid var(--border)}
-.kpi-label{font-size:10px;color:var(--text3);margin-bottom:9px;text-transform:uppercase;letter-spacing:.05em}
-.kpi-val{font-size:26px;font-weight:500;color:var(--text);line-height:1}
+.kpi{background:var(--card);border-radius:12px;padding:18px 20px;border:0.5px solid var(--border);display:flex;align-items:center;gap:16px}
+.kpi-icon{width:48px;height:48px;border-radius:12px;background:var(--orange);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kpi-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.kpi-val{font-size:30px;font-weight:700;color:var(--text);line-height:1;font-family:'Plus Jakarta Sans',sans-serif}
 .kpi-val.accent{color:var(--orange)}
 .kpi-val.accent-teal{color:var(--teal)}
-.kpi-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* ── Charts ── */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-.card{background:#fff;border-radius:10px;padding:18px;border:0.5px solid var(--border)}
-.card-title{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.card{background:var(--card);border-radius:12px;padding:20px;border:0.5px solid var(--border)}
+.card-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
 .legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2)}
 .leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* ── Ranking ── */
 .prog-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
 .prog-name{font-size:13px;color:var(--text2);width:100px;flex-shrink:0;display:flex;align-items:center;gap:8px}
-.rank-av{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
-.prog-track{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;border:0.5px solid var(--border)}
-.prog-fill{height:100%;border-radius:3px}
-.prog-val{font-size:13px;font-weight:500;color:var(--text);min-width:40px;text-align:right}
-.prog-count{font-size:12px;color:var(--text3);min-width:50px;text-align:right}
+.rank-av{width:10px;height:10px;border-radius:50%;flex-shrink:0;display:inline-block}
+
+/* ── Misc ── */
 .empty{text-align:center;padding:44px 0;color:var(--text3);font-size:13px}
 .link-ext{color:var(--blue);font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
 .link-ext:hover{color:var(--orange)}
 .sep{height:0.5px;background:var(--border);margin:14px 0}
-.total-row{display:flex;justify-content:space-between;align-items:center}
-.total-label{font-size:12px;color:var(--text3)}.total-val{font-size:14px;font-weight:500;color:var(--orange)}
+.total-val{font-size:14px;font-weight:500;color:var(--orange)}
 .total-val.teal{color:var(--teal)}
 .notif{font-size:13px;padding:9px 16px;border-radius:8px;margin-bottom:16px;display:none;align-items:center;gap:6px}
 .notif.show{display:flex}
 .notif.success{background:var(--green-light);border:0.5px solid #a0d8b8;color:var(--green)}
 .notif.error{background:var(--red-light);border:0.5px solid #e0b0b0;color:var(--red)}
-.table-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px}
-.table-row:last-child{border-bottom:none}
 .chip-person{display:inline-flex;align-items:center;gap:5px}
 .loading{text-align:center;padding:44px 0;color:var(--text3);font-size:13px}
-.sync-indicator{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:5px}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.sync-indicator{font-size:11px;color:#787888;display:flex;align-items:center;gap:5px}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#2e7d52;flex-shrink:0}
 .sync-dot.syncing{background:var(--orange);animation:pulse .8s infinite}
 .av-banner{background:var(--teal-light);border:0.5px solid #a0d4dc;border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--teal)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
@@ -136,205 +169,228 @@ html,body{height:100%;margin:0;padding:0;background:var(--bg);font-family:system
 </head>
 <body>
 <div class="app">
-  <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="background:var(--orange);border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
-        <span style="color:#fff;font-weight:700;font-size:16px">B1</span>
-      </div>
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">B1</div>
+    </div>
+    <div class="sidebar-filters">
+      <select id="year-filter" class="sidebar-select" onchange="applyMonthFilter()"></select>
+      <select id="month-filter" class="sidebar-select" onchange="applyMonthFilter()"></select>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="switchTab('dashboard',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard Design
+      </button>
+      <button class="nav-item" onclick="switchTab('demandas',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Demandas
+      </button>
+      <button class="nav-item" onclick="switchTab('audiovisual',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        Audiovisual
+      </button>
+    </nav>
+    <div class="sidebar-footer">
       <span class="sync-indicator"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Conectando...</span></span>
     </div>
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="display:flex;gap:6px;align-items:center">
-        <select id="year-filter" onchange="applyMonthFilter()" style="background:#fff;border:0.5px solid var(--border2);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;cursor:pointer"></select>
-        <select id="month-filter" onchange="applyMonthFilter()" style="background:#fff;border:0.5px solid var(--border2);border-radius:7px;padding:7px 12px;color:var(--text);font-size:13px;font-family:inherit;outline:none;cursor:pointer"></select>
-      </div>
-      <div class="tabs">
-        <button class="tab active" onclick="switchTab('demandas',this)">Design</button>
-        <button class="tab" onclick="switchTab('dashboard',this)">Dashboard Design</button>
-        <button class="tab" onclick="switchTab('audiovisual',this)">Audiovisual</button>
-      </div>
-    </div>
-  </div>
+  </aside>
 
-  <!-- ABA DESIGN -->
-  <div class="view active" id="view-demandas">
-    <div class="notif" id="notif"><span id="notif-msg"></span></div>
-    <div class="modal" id="modal-new">
-      <div class="modal-title">
-        <span>Nova demanda — Design</span>
-        <button class="btn sm" onclick="toggleModal()">✕ Fechar</button>
-      </div>
-      <div class="form-grid">
-        <div class="field"><label>Data da entrega</label><input type="date" id="f-date"></div>
-        <div class="field"><label>Designer responsável</label>
-          <select id="f-resp"><option value="">Selecionar...</option><option>Derick</option><option>Alexandre</option><option>Pablo</option><option>Vinicius</option></select>
-        </div>
-        <div class="field"><label>Título da demanda</label><input type="text" id="f-title" placeholder="Ex: Híbrida RICO TIGER"></div>
-        <div class="field"><label>Categoria</label>
-          <select id="f-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select>
-        </div>
-        <div class="field"><label>Data de postagem</label><input type="date" id="f-post"></div>
-        <div class="field"><label>Link ClickUp</label><input type="text" id="f-clickup" placeholder="https://app.clickup.com/..."></div>
-      </div>
-      <div class="form-actions">
-        <button class="btn" onclick="toggleModal()">Cancelar</button>
-        <button class="btn primary" id="btn-save" onclick="saveDemand('design')">✓ Criar demanda</button>
+  <!-- ── Main ── -->
+  <div class="main">
+    <div class="main-header">
+      <div class="theme-btns">
+        <button class="theme-btn" id="btn-light" onclick="setTheme('light')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          Light Mode
+        </button>
+        <button class="theme-btn active" id="btn-dark" onclick="setTheme('dark')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          Dark Mode
+        </button>
       </div>
     </div>
-    <div class="section-header">
-      <span class="section-title" id="demand-count">Carregando...</span>
-      <button class="btn primary" onclick="toggleModal()">+ Nova demanda</button>
-    </div>
-    <div class="filters" id="demand-filters">
-      <span class="filter-label">Designer</span>
-      <div class="chip active" data-dv="all">Todos</div>
-      <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
-      <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-      <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
-      <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
-    </div>
-    <div class="demand-list" id="demand-list"><div class="loading">Carregando demandas...</div></div>
-    <div class="done-section">
-      <div class="done-header" onclick="toggleDone('done-body','done-toggle-btn')">
-        <div class="done-header-left">
-          <span class="section-title">Concluídas</span>
-          <span class="done-badge" id="done-count">0</span>
-        </div>
-        <button class="btn sm" id="done-toggle-btn" style="pointer-events:none">▼ Expandir</button>
-      </div>
-      <div class="done-body" id="done-body">
-        <div class="filters" id="done-filters" style="margin-bottom:14px;margin-top:4px">
-          <span class="filter-label">Designer</span>
-          <div class="chip active" data-dv="all">Todos</div>
-          <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
-          <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-          <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
-          <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
-        </div>
-        <div class="demand-list" id="done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ABA AUDIOVISUAL -->
-  <div class="view" id="view-audiovisual">
-    <div class="notif" id="notif-av"><span id="notif-av-msg"></span></div>
-    <div class="av-banner">
-      <span class="avatar av-e" style="width:28px;height:28px;font-size:11px">ED</span>
-      <span><strong>Eduardo</strong> — Motion Designer · Audiovisual</span>
-    </div>
-    <div class="modal" id="modal-av">
-      <div class="modal-title">
-        <span>Nova demanda — Audiovisual</span>
-        <button class="btn sm" onclick="toggleModalAv()">✕ Fechar</button>
+    <!-- ABA DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="filters" id="dash-filters" style="margin-bottom:16px">
+        <span class="filter-label">Designer</span>
+        <div class="chip active" data-df="dresp" data-dv="all">Todos</div>
+        <div class="chip" data-df="dresp" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+        <div class="chip" data-df="dresp" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
+        <div class="chip" data-df="dresp" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
+        <div class="chip" data-df="dresp" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
+        <div class="divider-v"></div>
+        <span class="filter-label">Categoria</span>
+        <div class="chip active" data-df="dcat" data-dv="all">Todas</div>
+        <div class="chip" data-df="dcat" data-dv="CRM">CRM</div>
+        <div class="chip" data-df="dcat" data-dv="ADS">ADS</div>
+        <div class="chip" data-df="dcat" data-dv="REDES">Redes</div>
+        <div class="chip" data-df="dcat" data-dv="INTERNO">Interno</div>
+        <div class="chip" data-df="dcat" data-dv="OUTROS">Outros</div>
       </div>
-      <div class="form-grid">
-        <div class="field"><label>Data da entrega</label><input type="date" id="av-date"></div>
-        <div class="field"><label>Responsável</label>
-          <select id="av-resp"><option value="Eduardo">Eduardo</option></select>
+      <div class="kpi-row" id="d-kpis">
+        <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent">0</div><div class="kpi-sub">total confirmado</div></div></div>
+        <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">0</div><div class="kpi-sub">concluídas</div></div></div>
+        <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">0</div><div class="kpi-sub">créditos / entrega</div></div></div>
+        <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="kpi-label">Pendentes</div><div class="kpi-val">0</div><div class="kpi-sub">aguardando créditos</div></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="card">
+          <div class="card-title">Créditos por categoria</div>
+          <div class="legend" id="d-leg-cat"></div>
+          <div style="position:relative;width:100%;height:180px"><canvas id="d-cat"></canvas></div>
         </div>
-        <div class="field"><label>Título da demanda</label><input type="text" id="av-title" placeholder="Ex: Animação Stories Copa"></div>
-        <div class="field"><label>Categoria</label>
-          <select id="av-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select>
+        <div class="card">
+          <div class="card-title">Demandas por categoria</div>
+          <div class="legend" id="d-leg-cat-count"></div>
+          <div style="position:relative;width:100%;height:180px"><canvas id="d-cat-count"></canvas></div>
         </div>
-        <div class="field"><label>Data de postagem</label><input type="date" id="av-post"></div>
-        <div class="field"><label>Link ClickUp</label><input type="text" id="av-clickup" placeholder="https://app.clickup.com/..."></div>
       </div>
-      <div class="form-actions">
-        <button class="btn" onclick="toggleModalAv()">Cancelar</button>
-        <button class="btn primary teal" id="btn-save-av" onclick="saveDemand('audiovisual')">✓ Criar demanda</button>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Demandas por dia</div>
+        <div class="legend" id="d-leg-resp"></div>
+        <div style="position:relative;width:100%;height:180px"><canvas id="d-resp"></canvas></div>
       </div>
-    </div>
-    <div class="section-header">
-      <span class="section-title" id="av-demand-count">Carregando...</span>
-      <button class="btn primary teal" onclick="toggleModalAv()">+ Nova demanda</button>
-    </div>
-    <div class="demand-list" id="av-demand-list"><div class="loading">Carregando demandas...</div></div>
-    <div class="done-section">
-      <div class="done-header" onclick="toggleDone('av-done-body','av-done-toggle-btn')">
-        <div class="done-header-left">
-          <span class="section-title">Concluídas</span>
-          <span class="done-badge" id="av-done-count">0</span>
-        </div>
-        <button class="btn sm" id="av-done-toggle-btn" style="pointer-events:none">▼ Expandir</button>
-      </div>
-      <div class="done-body" id="av-done-body">
-        <div class="demand-list" id="av-done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Ranking — créditos acumulados</div>
+        <div id="d-ranking"><div class="empty">Nenhuma entrega concluída ainda.</div></div>
       </div>
     </div>
-    <!-- Mini dashboard Audiovisual -->
-    <div style="margin-top:32px">
-      <div class="section-title" style="margin-bottom:14px">Performance — Audiovisual</div>
-      <div class="kpi-row" id="av-kpis">
-        <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent-teal">0</div><div class="kpi-sub">total confirmado</div></div>
-        <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">0</div><div class="kpi-sub">concluídas</div></div>
-        <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">0</div><div class="kpi-sub">créditos / entrega</div></div>
-        <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">0</div><div class="kpi-sub">aguardando créditos</div></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Créditos por categoria — Audiovisual</div>
-        <div class="legend" id="av-leg-cat"></div>
-        <div style="position:relative;width:100%;height:180px"><canvas id="av-cat-chart"></canvas></div>
-      </div>
-    </div>
-  </div>
 
-  <!-- ABA DASHBOARD (Design) -->
-  <div class="view" id="view-dashboard">
-    <div class="filters" id="dash-filters" style="margin-bottom:16px">
-      <span class="filter-label">Designer</span>
-      <div class="chip active" data-df="dresp" data-dv="all">Todos</div>
-      <div class="chip" data-df="dresp" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
-      <div class="chip" data-df="dresp" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-      <div class="chip" data-df="dresp" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
-      <div class="chip" data-df="dresp" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
-      <div class="divider-v"></div>
-      <span class="filter-label">Categoria</span>
-      <div class="chip active" data-df="dcat" data-dv="all">Todas</div>
-      <div class="chip" data-df="dcat" data-dv="CRM">CRM</div>
-      <div class="chip" data-df="dcat" data-dv="ADS">ADS</div>
-      <div class="chip" data-df="dcat" data-dv="REDES">Redes</div>
-      <div class="chip" data-df="dcat" data-dv="INTERNO">Interno</div>
-      <div class="chip" data-df="dcat" data-dv="OUTROS">Outros</div>
-    </div>
-    <div class="kpi-row" id="d-kpis">
-      <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent">0</div><div class="kpi-sub">total confirmado</div></div>
-      <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">0</div><div class="kpi-sub">concluídas</div></div>
-      <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">0</div><div class="kpi-sub">créditos / entrega</div></div>
-      <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">0</div><div class="kpi-sub">aguardando créditos</div></div>
-    </div>
-    <div class="charts-row">
-      <div class="card">
-        <div class="card-title">Créditos por categoria</div>
-        <div class="legend" id="d-leg-cat"></div>
-        <div style="position:relative;width:100%;height:180px"><canvas id="d-cat"></canvas></div>
+    <!-- ABA DESIGN -->
+    <div class="view" id="view-demandas">
+      <div class="notif" id="notif"><span id="notif-msg"></span></div>
+      <div class="modal" id="modal-new">
+        <div class="modal-title">
+          <span>Nova demanda — Design</span>
+          <button class="btn sm" onclick="toggleModal()">✕ Fechar</button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Data da entrega</label><input type="date" id="f-date"></div>
+          <div class="field"><label>Designer responsável</label>
+            <select id="f-resp"><option value="">Selecionar...</option><option>Derick</option><option>Alexandre</option><option>Pablo</option><option>Vinicius</option></select>
+          </div>
+          <div class="field"><label>Título da demanda</label><input type="text" id="f-title" placeholder="Ex: Híbrida RICO TIGER"></div>
+          <div class="field"><label>Categoria</label>
+            <select id="f-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select>
+          </div>
+          <div class="field"><label>Data de postagem</label><input type="date" id="f-post"></div>
+          <div class="field"><label>Link ClickUp</label><input type="text" id="f-clickup" placeholder="https://app.clickup.com/..."></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn" onclick="toggleModal()">Cancelar</button>
+          <button class="btn primary" id="btn-save" onclick="saveDemand('design')">✓ Criar demanda</button>
+        </div>
       </div>
-      <div class="card">
-        <div class="card-title">Demandas por categoria</div>
-        <div class="legend" id="d-leg-cat-count"></div>
-        <div style="position:relative;width:100%;height:180px"><canvas id="d-cat-count"></canvas></div>
+      <div class="section-header">
+        <span class="section-title" id="demand-count">Carregando...</span>
+        <button class="btn primary" onclick="toggleModal()">+ Nova demanda</button>
+      </div>
+      <div class="filters" id="demand-filters">
+        <span class="filter-label">Designer</span>
+        <div class="chip active" data-dv="all">Todos</div>
+        <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+        <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
+        <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
+        <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
+      </div>
+      <div class="demand-list" id="demand-list"><div class="loading">Carregando demandas...</div></div>
+      <div class="done-section">
+        <div class="done-header" onclick="toggleDone('done-body','done-toggle-btn')">
+          <div class="done-header-left">
+            <span class="section-title">Concluídas</span>
+            <span class="done-badge" id="done-count">0</span>
+          </div>
+          <button class="btn sm" id="done-toggle-btn" style="pointer-events:none">▼ Expandir</button>
+        </div>
+        <div class="done-body" id="done-body">
+          <div class="filters" id="done-filters" style="margin-bottom:14px;margin-top:4px">
+            <span class="filter-label">Designer</span>
+            <div class="chip active" data-dv="all">Todos</div>
+            <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+            <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
+            <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
+            <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
+          </div>
+          <div class="demand-list" id="done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
+        </div>
       </div>
     </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Demandas por dia</div>
-      <div class="legend" id="d-leg-resp"></div>
-      <div style="position:relative;width:100%;height:180px"><canvas id="d-resp"></canvas></div>
+
+    <!-- ABA AUDIOVISUAL -->
+    <div class="view" id="view-audiovisual">
+      <div class="notif" id="notif-av"><span id="notif-av-msg"></span></div>
+      <div class="av-banner">
+        <span class="avatar av-e" style="width:28px;height:28px;font-size:11px">ED</span>
+        <span><strong>Eduardo</strong> — Motion Designer · Audiovisual</span>
+      </div>
+      <div class="modal" id="modal-av">
+        <div class="modal-title">
+          <span>Nova demanda — Audiovisual</span>
+          <button class="btn sm" onclick="toggleModalAv()">✕ Fechar</button>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Data da entrega</label><input type="date" id="av-date"></div>
+          <div class="field"><label>Responsável</label>
+            <select id="av-resp"><option value="Eduardo">Eduardo</option></select>
+          </div>
+          <div class="field"><label>Título da demanda</label><input type="text" id="av-title" placeholder="Ex: Animação Stories Copa"></div>
+          <div class="field"><label>Categoria</label>
+            <select id="av-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select>
+          </div>
+          <div class="field"><label>Data de postagem</label><input type="date" id="av-post"></div>
+          <div class="field"><label>Link ClickUp</label><input type="text" id="av-clickup" placeholder="https://app.clickup.com/..."></div>
+        </div>
+        <div class="form-actions">
+          <button class="btn" onclick="toggleModalAv()">Cancelar</button>
+          <button class="btn primary teal" id="btn-save-av" onclick="saveDemand('audiovisual')">✓ Criar demanda</button>
+        </div>
+      </div>
+      <div class="section-header">
+        <span class="section-title" id="av-demand-count">Carregando...</span>
+        <button class="btn primary teal" onclick="toggleModalAv()">+ Nova demanda</button>
+      </div>
+      <div class="demand-list" id="av-demand-list"><div class="loading">Carregando demandas...</div></div>
+      <div class="done-section">
+        <div class="done-header" onclick="toggleDone('av-done-body','av-done-toggle-btn')">
+          <div class="done-header-left">
+            <span class="section-title">Concluídas</span>
+            <span class="done-badge" id="av-done-count">0</span>
+          </div>
+          <button class="btn sm" id="av-done-toggle-btn" style="pointer-events:none">▼ Expandir</button>
+        </div>
+        <div class="done-body" id="av-done-body">
+          <div class="demand-list" id="av-done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
+        </div>
+      </div>
+      <div style="margin-top:32px">
+        <div class="section-title" style="margin-bottom:14px">Performance — Audiovisual</div>
+        <div class="kpi-row" id="av-kpis">
+          <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent-teal">0</div><div class="kpi-sub">total confirmado</div></div></div>
+          <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">0</div><div class="kpi-sub">concluídas</div></div></div>
+          <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">0</div><div class="kpi-sub">créditos / entrega</div></div></div>
+          <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="kpi-label">Pendentes</div><div class="kpi-val">0</div><div class="kpi-sub">aguardando créditos</div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Créditos por categoria — Audiovisual</div>
+          <div class="legend" id="av-leg-cat"></div>
+          <div style="position:relative;width:100%;height:180px"><canvas id="av-cat-chart"></canvas></div>
+        </div>
+      </div>
     </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Ranking — créditos acumulados</div>
-      <div id="d-ranking"><div class="empty">Nenhuma entrega concluída ainda.</div></div>
-    </div>
-  </div>
-</div>
+
+  </div><!-- /.main -->
+</div><!-- /.app -->
 
 <script>
-// ── Supabase ─────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://ebulxcffxpkchyrkrbbe.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVidWx4Y2ZmeHBrY2h5cmtyYmJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODg4NzAsImV4cCI6MjA5ODM2NDg3MH0.TqQDw-xc8CZ0vztW_KthiopMgxGGxgWBPdH7GnPDw0I';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://ebulxcffxpkchyrkrbbe.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVidWx4Y2ZmeHBrY2h5cmtyYmJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODg4NzAsImV4cCI6MjA5ODM2NDg3MH0.TqQDw-xc8CZ0vztW_KthiopMgxGGxgWBPdH7GnPDw0I';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-// ── Constantes ────────────────────────────────────────────────────
-const DESIGN_TEAM = ['Derick','Alexandre','Pablo','Vinicius'];
+const DESIGN_TEAM=['Derick','Alexandre','Pablo','Vinicius'];
 const RC={Derick:'#e91e8c',Alexandre:'#f0a500',Pablo:'#e53935',Vinicius:'#5c6bc0',Eduardo:'#0e7490'};
 const CC={CRM:'#4a90d9',ADS:'#3a9e50',REDES:'#e08020',INTERNO:'#999',OUTROS:'#7040b0'};
 const CC_AV={CRM:'#0e7490',ADS:'#0891b2',REDES:'#06b6d4',INTERNO:'#67c4d8',OUTROS:'#2a9ab5'};
@@ -351,10 +407,30 @@ let doneStates={};
 function fmt(n){return Number(n||0).toLocaleString('pt-BR')}
 function fmtDate(s){if(!s)return'—';const p=s.split('-');return p.length===3?`${p[2]}/${p[1]}`:'—'}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
-const isDesign = d => DESIGN_TEAM.includes(d.resp);
-const isAV = d => d.resp === 'Eduardo';
+const isDesign=d=>DESIGN_TEAM.includes(d.resp);
+const isAV=d=>d.resp==='Eduardo';
 
-// ── Sync indicator ────────────────────────────────────────────────
+// ── Theme ─────────────────────────────────────────────────────────
+function setTheme(theme){
+  document.documentElement.setAttribute('data-theme',theme);
+  localStorage.setItem('b1-theme',theme);
+  document.getElementById('btn-light').classList.toggle('active',theme==='light');
+  document.getElementById('btn-dark').classList.toggle('active',theme==='dark');
+  if(catCI)catCI.destroy(),catCI=null;
+  if(catCountCI)catCountCI.destroy(),catCountCI=null;
+  if(respCI)respCI.destroy(),respCI=null;
+  if(avCatCI)avCatCI.destroy(),avCatCI=null;
+  if(document.getElementById('view-dashboard').classList.contains('active'))renderDashboard();
+  if(document.getElementById('view-audiovisual').classList.contains('active'))renderAV();
+}
+(function(){
+  const saved=localStorage.getItem('b1-theme')||'dark';
+  document.documentElement.setAttribute('data-theme',saved);
+  document.getElementById('btn-light').classList.toggle('active',saved==='light');
+  document.getElementById('btn-dark').classList.toggle('active',saved==='dark');
+})();
+
+// ── Sync ──────────────────────────────────────────────────────────
 function setSyncing(on){
   document.getElementById('sync-dot').className='sync-dot'+(on?' syncing':'');
   document.getElementById('sync-label').textContent=on?'Sincronizando...':'Sincronizado';
@@ -378,11 +454,9 @@ async function loadData(){
   if(error){showNotif('Erro ao carregar: '+error.message,'error');return;}
   demands=data||[];
   setConnected();
-  renderAll();
-  renderAV();
+  renderAll();renderAV();
   if(document.getElementById('view-dashboard').classList.contains('active'))renderDashboard();
 }
-
 function setupRealtime(){
   sb.channel('demandas-changes')
     .on('postgres_changes',{event:'*',schema:'public',table:'demandas'},()=>loadData())
@@ -391,7 +465,7 @@ function setupRealtime(){
 
 // ── Tabs ──────────────────────────────────────────────────────────
 function switchTab(tab,btn){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('view-'+tab).classList.add('active');
@@ -593,18 +667,30 @@ function renderAV(){
   document.getElementById('av-demand-list').innerHTML=pending.length?pending.map(d=>renderCard(d,true,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
   document.getElementById('av-done-count').textContent=String(done.length);
   document.getElementById('av-done-list').innerHTML=done.length?done.map(d=>renderCard(d,false,true)).join(''):'<div class="empty">Nenhuma demanda concluída ainda.</div>';
-  // Mini dashboard AV
   const total=done.reduce((a,d)=>a+d.cred,0),avg=done.length?Math.round(total/done.length):0;
+  const th=getChartTheme();
   document.getElementById('av-kpis').innerHTML=`
-    <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent-teal">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div>
-    <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">concluídas</div></div>
-    <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div>
-    <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">${pending.length}</div><div class="kpi-sub">aguardando créditos</div></div>`;
+    <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent-teal">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">concluídas</div></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div></div>
+    <div class="kpi"><div class="kpi-icon" style="background:var(--teal)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="kpi-label">Pendentes</div><div class="kpi-val">${pending.length}</div><div class="kpi-sub">aguardando créditos</div></div></div>`;
   const byCat={};done.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+d.cred});
   const cats=Object.keys(byCat),cv=cats.map(c=>byCat[c]),cc=cats.map(c=>CC_AV[c]||'#0e7490');
   document.getElementById('av-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${fmt(cv[i])}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(avCatCI)avCatCI.destroy();
-  if(cats.length){avCatCI=new Chart(document.getElementById('av-cat-chart'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
+  if(cats.length){avCatCI=new Chart(document.getElementById('av-cat-chart'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
+}
+
+// ── Chart theme helper ─────────────────────────────────────────────
+function getChartTheme(){
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  return{
+    gridColor:dark?'#2a2a38':'#f0f0ee',
+    tickColor:dark?'#505062':'#bbb',
+    borderColor:dark?'#2a2a38':'#e4e4e0',
+    cardBg:dark?'#1e1e28':'#ffffff',
+    totalColor:dark?'#ccccdd':'#333333',
+  };
 }
 
 // ── Dashboard Design ──────────────────────────────────────────────
@@ -612,37 +698,30 @@ function renderDashboard(){
   const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d));
   const filt=done.filter(d=>(ddResp==='all'||d.resp===ddResp)&&(ddCat==='all'||d.cat===ddCat));
   const total=filt.reduce((a,d)=>a+d.cred,0),avg=filt.length?Math.round(total/filt.length):0;
-  const byResp={};filt.forEach(d=>{byResp[d.resp]=(byResp[d.resp]||0)+d.cred});
+  const pendCount=demands.filter(d=>isDesign(d)&&d.cred===null).length;
+  const th=getChartTheme();
   document.getElementById('d-kpis').innerHTML=`
-    <div class="kpi"><div class="kpi-label">Créditos</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div>
-    <div class="kpi"><div class="kpi-label">Entregas</div><div class="kpi-val">${filt.length}</div><div class="kpi-sub">concluídas</div></div>
-    <div class="kpi"><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div>
-    <div class="kpi"><div class="kpi-label">Pendentes</div><div class="kpi-val">${demands.filter(d=>isDesign(d)&&d.cred===null).length}</div><div class="kpi-sub">aguardando créditos</div></div>`;
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">${filt.length}</div><div class="kpi-sub">concluídas</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="kpi-label">Pendentes</div><div class="kpi-val">${pendCount}</div><div class="kpi-sub">aguardando créditos</div></div></div>`;
   const byCat={};filt.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+d.cred});
   const cats=Object.keys(byCat),cv=cats.map(c=>byCat[c]),cc=cats.map(c=>CC[c]||'#999');
   document.getElementById('d-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${fmt(cv[i])}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(catCI)catCI.destroy();
-  if(cats.length){catCI=new Chart(document.getElementById('d-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
-  // Donut: demandas por categoria (contagem)
+  if(cats.length){catCI=new Chart(document.getElementById('d-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
   const byCatCount={};filt.forEach(d=>{byCatCount[d.cat]=(byCatCount[d.cat]||0)+1});
   const catsC=Object.keys(byCatCount),cvC=catsC.map(c=>byCatCount[c]),ccC=catsC.map(c=>CC[c]||'#999');
   document.getElementById('d-leg-cat-count').innerHTML=catsC.length?catsC.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${ccC[i]}"></span>${CL[c]||c} ${cvC[i]}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(catCountCI)catCountCI.destroy();
-  if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
-  // Gráfico: Demandas por categoria empilhadas por dia
+  if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
   const allDemandas=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d)&&(ddResp==='all'||d.resp===ddResp));
   const allDates=[...new Set(allDemandas.map(d=>d.date).filter(Boolean))].sort();
   const CATS=['CRM','ADS','REDES','INTERNO','OUTROS'];
-  const stackedDatasets=CATS.map(cat=>({
-    label:CL[cat],
-    data:allDates.map(date=>allDemandas.filter(d=>d.date===date&&d.cat===cat).length),
-    backgroundColor:CC[cat],
-    stack:'stack'
-  })).filter(ds=>ds.data.some(v=>v>0));
+  const stackedDatasets=CATS.map(cat=>({label:CL[cat],data:allDates.map(date=>allDemandas.filter(d=>d.date===date&&d.cat===cat).length),backgroundColor:CC[cat],stack:'stack'})).filter(ds=>ds.data.some(v=>v>0));
   document.getElementById('d-leg-resp').innerHTML=stackedDatasets.length?stackedDatasets.map(ds=>`<span class="leg-item"><span class="leg-dot" style="background:${ds.backgroundColor}"></span>${ds.label}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   const stackedPlugin={id:'stackedLabels',afterDatasetsDraw(chart){
     const{ctx,data}=chart;
-    // Números dentro de cada segmento
     data.datasets.forEach((ds,di)=>{
       const meta=chart.getDatasetMeta(di);
       meta.data.forEach((bar,i)=>{
@@ -654,21 +733,18 @@ function renderDashboard(){
         ctx.fillText(val,bar.x,cy);ctx.restore();
       });
     });
-    // Total no topo
     data.labels.forEach((_,i)=>{
-      const total=data.datasets.reduce((s,ds)=>s+(ds.data[i]||0),0);if(!total)return;
+      const t=data.datasets.reduce((s,ds)=>s+(ds.data[i]||0),0);if(!t)return;
       let topBar=null;
-      for(let di=data.datasets.length-1;di>=0;di--){
-        if(data.datasets[di].data[i]>0){topBar=chart.getDatasetMeta(di).data[i];break;}
-      }
+      for(let di=data.datasets.length-1;di>=0;di--){if(data.datasets[di].data[i]>0){topBar=chart.getDatasetMeta(di).data[i];break;}}
       if(!topBar)return;
-      ctx.save();ctx.fillStyle='#333';ctx.font='bold 11px system-ui';
+      ctx.save();ctx.fillStyle=getChartTheme().totalColor;ctx.font='bold 11px system-ui';
       ctx.textAlign='center';ctx.textBaseline='bottom';
-      ctx.fillText(total,topBar.x,topBar.y-3);ctx.restore();
+      ctx.fillText(t,topBar.x,topBar.y-3);ctx.restore();
     });
   }};
   if(respCI)respCI.destroy();
-  respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:'#999',font:{size:10}},border:{color:'#e4e4e0'},stacked:true},y:{grid:{color:'#f0f0ee'},ticks:{color:'#bbb',font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
+  respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:th.borderColor},stacked:true},y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
   const CATS_ORDER=['CRM','ADS','REDES','INTERNO','OUTROS'];
   const dData={};
   DESIGN_TEAM.forEach(n=>{dData[n]={total:0,cred:0,cats:{}};CATS_ORDER.forEach(c=>dData[n].cats[c]=0);});
