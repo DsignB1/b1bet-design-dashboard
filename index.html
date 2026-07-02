@@ -724,13 +724,21 @@ function renderDashboard(){
   const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d));
   const filt=done.filter(d=>(ddResp==='all'||d.resp===ddResp)&&(ddCat==='all'||d.cat===ddCat));
   const total=filt.reduce((a,d)=>a+d.cred,0),avg=filt.length?Math.round(total/filt.length):0;
-  const pendCount=demands.filter(d=>isDesign(d)&&d.cred===null).length;
+  const pendAll=demands.filter(d=>isDesign(d)&&d.cred===null);
+  const pendCount=pendAll.length;
+  const pendByDes={};DESIGN_TEAM.forEach(n=>pendByDes[n]=0);
+  pendAll.forEach(d=>{if(pendByDes[d.resp]!==undefined)pendByDes[d.resp]++;});
   const th=getChartTheme();
   document.getElementById('d-kpis').innerHTML=`
     <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">total confirmado</div></div></div>
     <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">${filt.length}</div><div class="kpi-sub">concluídas</div></div></div>
     <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="kpi-label">Pendentes</div><div class="kpi-val">${pendCount}</div><div class="kpi-sub">aguardando créditos</div></div></div>`;
+    <div class="kpi" style="flex-direction:column;align-items:flex-start;gap:10px;padding:14px 18px">
+      <div class="kpi-label">Pendentes — ${pendCount} total</div>
+      <div style="display:flex;gap:6px;width:100%">
+        ${DESIGN_TEAM.map(n=>{const cnt=pendByDes[n]||0;const color=RC[n]||'#999';return`<div style="flex:1;background:${color}22;border:0.5px solid ${color}88;border-radius:8px;padding:8px 4px;text-align:center"><div style="color:${color};font-size:20px;font-weight:700;line-height:1;font-family:'Plus Jakarta Sans',sans-serif">${cnt}</div><div style="font-size:9px;color:var(--text3);margin-top:4px">${n.substring(0,2).toUpperCase()}</div></div>`;}).join('')}
+      </div>
+    </div>`;
   // mês anterior para comparativo nos tooltips
   const prevMonth=activeMonth!=='all'?getPrevMonth(activeMonth):null;
   const donePrev=prevMonth?demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,prevMonth)):[];
