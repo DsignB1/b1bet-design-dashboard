@@ -294,7 +294,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
         <div class="chip active" data-dv="all">Todos</div>
         <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
         <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-        <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
+        <div class="chip" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
         <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
       </div>
       <div class="demand-list" id="demand-list"><div class="loading">Carregando demandas...</div></div>
@@ -315,7 +315,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
             <div class="chip active" data-dv="all">Todos</div>
             <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
             <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-            <div class="chip" data-dv="Pablo"><span class="dot" style="background:var(--orange)"></span>Pablo</div>
+            <div class="chip" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
             <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
           </div>
           <div class="demand-list" id="done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
@@ -467,6 +467,14 @@ function setupRealtime(){
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────
+function goToPending(name){
+  const btn=document.querySelector('.nav-item[onclick*="demandas"]');
+  if(btn)switchTab('demandas',btn);
+  filterResp=name;
+  document.querySelectorAll('#demand-filters .chip').forEach(c=>c.classList.toggle('active',c.dataset.dv===name));
+  renderAll();
+  setTimeout(()=>{const el=document.getElementById('demand-list');if(el)el.scrollIntoView({behavior:'smooth'});},50);
+}
 function switchTab(tab,btn){
   document.querySelectorAll('.nav-item').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -737,7 +745,7 @@ function renderDashboard(){
     <div class="kpi" style="flex-direction:column;align-items:flex-start;gap:10px;padding:14px 18px">
       <div class="kpi-label">Pendentes — ${pendCount} total</div>
       <div style="display:flex;gap:6px;width:100%">
-        ${DESIGN_TEAM.map(n=>{const cnt=pendByDes[n]||0;const color=RC[n]||'#999';return`<div style="flex:1;background:${color};border-radius:8px;padding:8px 4px;text-align:center"><div style="color:#fff;font-size:20px;font-weight:700;line-height:1;font-family:'Plus Jakarta Sans',sans-serif">${cnt}</div><div style="font-size:9px;color:rgba(255,255,255,0.75);margin-top:4px">${n}</div></div>`;}).join('')}
+        ${DESIGN_TEAM.map(n=>{const cnt=pendByDes[n]||0;const color=RC[n]||'#999';return`<div onclick="goToPending('${n}')" style="flex:1;background:${color};border-radius:8px;padding:8px 4px;text-align:center;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'"><div style="color:#fff;font-size:20px;font-weight:700;line-height:1;font-family:'Plus Jakarta Sans',sans-serif">${cnt}</div><div style="font-size:9px;color:rgba(255,255,255,0.75);margin-top:4px">${n}</div></div>`;}).join('')}
       </div>
     </div>`;
   // mês anterior para comparativo nos tooltips
