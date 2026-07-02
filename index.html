@@ -681,6 +681,18 @@ function renderAV(){
   if(cats.length){avCatCI=new Chart(document.getElementById('av-cat-chart'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
 }
 
+// ── Dias úteis do mês ─────────────────────────────────────────────
+function getBusinessDays(ym){
+  const[y,m]=ym.split('-').map(Number);
+  const days=[],d=new Date(y,m-1,1);
+  while(d.getMonth()===m-1){
+    const dow=d.getDay();
+    if(dow!==0&&dow!==6)days.push(`${y}-${String(m).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+    d.setDate(d.getDate()+1);
+  }
+  return days;
+}
+
 // ── Chart theme helper ─────────────────────────────────────────────
 function getChartTheme(){
   const dark=document.documentElement.getAttribute('data-theme')==='dark';
@@ -716,7 +728,9 @@ function renderDashboard(){
   if(catCountCI)catCountCI.destroy();
   if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
   const allDemandas=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d)&&(ddResp==='all'||d.resp===ddResp));
-  const allDates=[...new Set(allDemandas.map(d=>d.date).filter(Boolean))].sort();
+  const allDates=activeMonth==='all'
+    ?[...new Set(allDemandas.map(d=>d.date).filter(Boolean))].sort()
+    :getBusinessDays(activeMonth);
   const CATS=['CRM','ADS','REDES','INTERNO','OUTROS'];
   const stackedDatasets=CATS.map(cat=>({label:CL[cat],data:allDates.map(date=>allDemandas.filter(d=>d.date===date&&d.cat===cat).length),backgroundColor:CC[cat],stack:'stack'})).filter(ds=>ds.data.some(v=>v>0));
   document.getElementById('d-leg-resp').innerHTML=stackedDatasets.length?stackedDatasets.map(ds=>`<span class="leg-item"><span class="leg-dot" style="background:${ds.backgroundColor}"></span>${ds.label}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
