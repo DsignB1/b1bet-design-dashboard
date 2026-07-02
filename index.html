@@ -784,6 +784,19 @@ function renderDashboard(){
   const dData={};
   DESIGN_TEAM.forEach(n=>{dData[n]={total:0,cred:0,cats:{}};CATS_ORDER.forEach(c=>dData[n].cats[c]=0);});
   done.forEach(d=>{if(dData[d.resp]){dData[d.resp].total++;dData[d.resp].cred+=(d.cred||0);dData[d.resp].cats[d.cat]=(dData[d.resp].cats[d.cat]||0)+1;}});
+  // variação semanal
+  const wFmt=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const wNow=new Date(),wDay=wNow.getDay();
+  const wMonThis=new Date(wNow);wMonThis.setDate(wNow.getDate()-((wDay+6)%7));
+  const wMonPrev=new Date(wMonThis);wMonPrev.setDate(wMonThis.getDate()-7);
+  const wSunPrev=new Date(wMonPrev);wSunPrev.setDate(wMonPrev.getDate()+6);
+  const twStart=wFmt(wMonThis),twEnd=wFmt(wNow),pwStart=wFmt(wMonPrev),pwEnd=wFmt(wSunPrev);
+  const wThis={},wPrev={};
+  demands.filter(d=>isDesign(d)&&d.cred!==null).forEach(d=>{
+    const ref=d.entrega||d.date;if(!ref)return;
+    if(ref>=twStart&&ref<=twEnd)wThis[d.resp]=(wThis[d.resp]||0)+1;
+    if(ref>=pwStart&&ref<=pwEnd)wPrev[d.resp]=(wPrev[d.resp]||0)+1;
+  });
   const rankSorted=DESIGN_TEAM.map(n=>[n,dData[n]]).sort((a,b)=>b[1].total-a[1].total).filter(([,d])=>d.total>0);
   const maxDem=rankSorted[0]?rankSorted[0][1].total:1;
   document.getElementById('d-ranking').innerHTML=rankSorted.length?rankSorted.map(([name,data])=>{
@@ -792,6 +805,8 @@ function renderDashboard(){
       const sw=Math.round(data.cats[cat]/data.total*100);
       return`<div style="width:${sw}%;background:${CC[cat]};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;overflow:hidden;white-space:nowrap;min-width:0">${data.cats[cat]}</div>`;
     }).join('');
+    const delta=(wThis[name]||0)-(wPrev[name]||0);
+    const deltaHTML=delta>0?`<span style="color:#2e7d52;font-size:11px;font-weight:600">↑${delta}</span>`:delta<0?`<span style="color:#b83232;font-size:11px;font-weight:600">↓${Math.abs(delta)}</span>`:`<span style="font-size:11px;color:var(--text3)">—</span>`;
     return`<div class="prog-row">
       <span class="prog-name"><span class="rank-av" style="background:${RC[name]||'#999'}"></span>${name}</span>
       <div style="flex:1;height:30px;background:var(--bg);border-radius:6px;overflow:hidden;border:0.5px solid var(--border);display:flex">
@@ -799,6 +814,7 @@ function renderDashboard(){
       </div>
       <span style="font-size:12px;color:var(--text2);min-width:50px;text-align:right;flex-shrink:0">${data.total} dem.</span>
       <span style="font-size:13px;font-weight:500;color:var(--orange);min-width:70px;text-align:right;flex-shrink:0">${fmt(data.cred)} cred.</span>
+      <span style="min-width:28px;text-align:right;flex-shrink:0">${deltaHTML}</span>
     </div>`;
   }).join(''):'<div class="empty">Nenhuma entrega concluída ainda.</div>';
 }
