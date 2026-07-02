@@ -165,7 +165,6 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
 .sync-dot.syncing{background:var(--orange);animation:pulse .8s infinite}
 .av-banner{background:var(--teal-light);border:0.5px solid #a0d4dc;border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--teal)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-[data-theme="dark"] .card{box-shadow:0 0 0 0.5px var(--border),0 0 30px rgba(255,255,255,0.04),0 8px 32px rgba(0,0,0,0.35)}
 </style>
 </head>
 <body>
@@ -805,20 +804,6 @@ document.getElementById('dash-filters').addEventListener('click',function(e){
   chip.classList.add('active');
   if(df==='dresp')ddResp=dv;else ddCat=dv;
   renderDashboard();
-});
-
-// ── Glow plugin ───────────────────────────────────────────────────
-Chart.register({
-  id:'glowEffect',
-  beforeDatasetsDraw(chart){
-    if(document.documentElement.getAttribute('data-theme')!=='dark')return;
-    chart.ctx.shadowBlur=16;
-    chart.ctx.shadowColor='rgba(210,230,255,0.2)';
-  },
-  afterDatasetsDraw(chart){
-    chart.ctx.shadowBlur=0;
-    chart.ctx.shadowColor='transparent';
-  }
 });
 
 // ── Init ──────────────────────────────────────────────────────────
