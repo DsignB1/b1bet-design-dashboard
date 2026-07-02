@@ -165,6 +165,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
 .sync-dot.syncing{background:var(--orange);animation:pulse .8s infinite}
 .av-banner{background:var(--teal-light);border:0.5px solid #a0d4dc;border-radius:10px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--teal)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+[data-theme="dark"] .card{box-shadow:0 0 0 0.5px var(--border),0 0 30px rgba(255,255,255,0.04),0 8px 32px rgba(0,0,0,0.35)}
 </style>
 </head>
 <body>
@@ -395,7 +396,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const DESIGN_TEAM=['Derick','Alexandre','Pablo','Vinicius'];
 const RC={Derick:'#e91e8c',Alexandre:'#f0a500',Pablo:'#e53935',Vinicius:'#5c6bc0',Eduardo:'#0e7490'};
-const CC={CRM:'#4a90d9',ADS:'#3a9e50',REDES:'#e08020',INTERNO:'#999',OUTROS:'#7040b0'};
+const CC={CRM:'#38bdf8',ADS:'#4ade80',REDES:'#c084fc',INTERNO:'#fb923c',OUTROS:'#a3e635'};
 const CC_AV={CRM:'#0e7490',ADS:'#0891b2',REDES:'#06b6d4',INTERNO:'#67c4d8',OUTROS:'#2a9ab5'};
 const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-outros'};
 const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros'};
@@ -804,6 +805,20 @@ document.getElementById('dash-filters').addEventListener('click',function(e){
   chip.classList.add('active');
   if(df==='dresp')ddResp=dv;else ddCat=dv;
   renderDashboard();
+});
+
+// ── Glow plugin ───────────────────────────────────────────────────
+Chart.register({
+  id:'glowEffect',
+  beforeDatasetsDraw(chart){
+    if(document.documentElement.getAttribute('data-theme')!=='dark')return;
+    chart.ctx.shadowBlur=16;
+    chart.ctx.shadowColor='rgba(210,230,255,0.2)';
+  },
+  afterDatasetsDraw(chart){
+    chart.ctx.shadowBlur=0;
+    chart.ctx.shadowColor='transparent';
+  }
 });
 
 // ── Init ──────────────────────────────────────────────────────────
