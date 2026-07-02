@@ -307,7 +307,10 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
           <button class="btn sm" id="done-toggle-btn" style="pointer-events:none">▼ Expandir</button>
         </div>
         <div class="done-body" id="done-body">
-          <div class="filters" id="done-filters" style="margin-bottom:14px;margin-top:4px">
+          <div style="margin-bottom:12px;margin-top:4px">
+            <input id="done-search" type="text" placeholder="🔍 Buscar demanda concluída..." oninput="renderAll()" style="width:100%;background:var(--card2);border:0.5px solid var(--border2);border-radius:8px;padding:9px 14px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none">
+          </div>
+          <div class="filters" id="done-filters" style="margin-bottom:14px;margin-top:0">
             <span class="filter-label">Designer</span>
             <div class="chip active" data-dv="all">Todos</div>
             <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
@@ -654,7 +657,8 @@ function renderAll(){
   const filtPending=filterResp==='all'?pending:pending.filter(d=>d.resp===filterResp);
   document.getElementById('demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
   document.getElementById('demand-list').innerHTML=filtPending.length?filtPending.map(d=>renderCard(d,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
-  const filtDone=filterDoneResp==='all'?done:done.filter(d=>d.resp===filterDoneResp);
+  const searchTerm=(document.getElementById('done-search')?.value||'').toLowerCase().trim();
+  const filtDone=(filterDoneResp==='all'?done:done.filter(d=>d.resp===filterDoneResp)).filter(d=>!searchTerm||d.title.toLowerCase().includes(searchTerm));
   document.getElementById('done-count').textContent=String(done.length);
   document.getElementById('done-list').innerHTML=filtDone.length?filtDone.map(d=>renderCard(d,false)).join(''):'<div class="empty">Nenhuma demanda concluída encontrada.</div>';
 }
