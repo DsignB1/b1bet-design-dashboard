@@ -593,6 +593,15 @@ function matchMonth(d){
   const ref=d.entrega||d.date||d.post;
   return ref?ref.startsWith(activeMonth):false;
 }
+function getPrevMonth(ym){
+  const[y,m]=ym.split('-').map(Number);
+  if(m===1)return`${y-1}-12`;
+  return`${y}-${String(m-1).padStart(2,'0')}`;
+}
+function matchSpecificMonth(d,ym){
+  const ref=d.entrega||d.date||d.post;
+  return ref?ref.startsWith(ym):false;
+}
 
 // ── Toggle concluídas ─────────────────────────────────────────────
 function toggleDone(bodyId,btnId){
@@ -722,16 +731,23 @@ function renderDashboard(){
     <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">${filt.length}</div><div class="kpi-sub">concluídas</div></div></div>
     <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div></div>
     <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div><div class="kpi-label">Pendentes</div><div class="kpi-val">${pendCount}</div><div class="kpi-sub">aguardando créditos</div></div></div>`;
+  // mês anterior para comparativo nos tooltips
+  const prevMonth=activeMonth!=='all'?getPrevMonth(activeMonth):null;
+  const donePrev=prevMonth?demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,prevMonth)):[];
+  const filtPrev=donePrev.filter(d=>(ddResp==='all'||d.resp===ddResp)&&(ddCat==='all'||d.cat===ddCat));
+  const prevByCat={};filtPrev.forEach(d=>{prevByCat[d.cat]=(prevByCat[d.cat]||0)+d.cred});
+  const prevByCatCount={};filtPrev.forEach(d=>{prevByCatCount[d.cat]=(prevByCatCount[d.cat]||0)+1});
+
   const byCat={};filt.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+d.cred});
   const cats=Object.keys(byCat),cv=cats.map(c=>byCat[c]),cc=cats.map(c=>CC[c]||'#999');
   document.getElementById('d-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${fmt(cv[i])}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(catCI)catCI.destroy();
-  if(cats.length){catCI=new Chart(document.getElementById('d-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${fmt(ctx.parsed)} créditos`}}}}});}
+  if(cats.length){catCI=new Chart(document.getElementById('d-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const cat=cats[ctx.dataIndex];const curr=ctx.parsed;if(!prevMonth)return` ${fmt(curr)} créditos`;const prev=prevByCat[cat]||0;const diff=curr-prev;const sign=diff>=0?'+':'';return[` ${fmt(curr)} créditos`,` mês anterior: ${fmt(prev)} (${sign}${fmt(diff)})`];}}}}}});}
   const byCatCount={};filt.forEach(d=>{byCatCount[d.cat]=(byCatCount[d.cat]||0)+1});
   const catsC=Object.keys(byCatCount),cvC=catsC.map(c=>byCatCount[c]),ccC=catsC.map(c=>CC[c]||'#999');
   document.getElementById('d-leg-cat-count').innerHTML=catsC.length?catsC.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${ccC[i]}"></span>${CL[c]||c} ${cvC[i]}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   if(catCountCI)catCountCI.destroy();
-  if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
+  if(catsC.length){catCountCI=new Chart(document.getElementById('d-cat-count'),{type:'doughnut',data:{labels:catsC.map(c=>CL[c]||c),datasets:[{data:cvC,backgroundColor:ccC,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const cat=catsC[ctx.dataIndex];const curr=ctx.parsed;if(!prevMonth)return` ${curr} demanda${curr!==1?'s':''}`;const prev=prevByCatCount[cat]||0;const diff=curr-prev;const sign=diff>=0?'+':'';return[` ${curr} demanda${curr!==1?'s':''}`,` mês anterior: ${prev} (${sign}${diff})`];}}}}}});}
   const allDemandas=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d)&&(ddResp==='all'||d.resp===ddResp));
   const allDates=activeMonth==='all'
     ?[...new Set(allDemandas.map(d=>d.entrega||d.date).filter(Boolean))].sort()
