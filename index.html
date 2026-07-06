@@ -562,7 +562,7 @@ function renderCard(d,showCredInput){
     </div>
     ${showCredInput?`<div class="cred-input-wrap">
       <span class="cred-label">⬡ Inserir créditos utilizados</span>
-      <input class="cred-input" type="number" id="ci-${d.id}" placeholder="Ex: 90" min="0">
+      <input class="cred-input" type="number" id="ci-${d.id}" placeholder="Ex: 90" min="0" onkeydown="if(event.key==='Enter')saveCred('${d.id}')">
       <button class="btn sm primary" onclick="saveCred('${d.id}')">✓ Confirmar</button>
     </div>`:''}
     <div class="edit-panel" id="ep-${d.id}">
