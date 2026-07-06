@@ -444,12 +444,8 @@ async function saveCred(id){
   const inp=document.getElementById('ci-'+id),val=parseInt(inp.value);
   if(isNaN(val)||val<0){showNotif('Valor inválido.','error');return;}
   setSyncing(true);
-  const d=demands.find(x=>x.id===id);
-  const isOthers=d&&d.cat==='OUTROS';
-  const newCred=isOthers?(d.cred||0)+val:val;
   const today=new Date().toISOString().split('T')[0];
-  const updateData=isOthers?{cred:newCred}:{cred:val,entrega:today};
-  const{error}=await sb.from('demandas').update(updateData).eq('id',id);
+  const{error}=await sb.from('demandas').update({cred:val,entrega:today}).eq('id',id);
   if(error){setSyncing(false);showNotif('Erro: '+error.message,'error');return;}
   showNotif('Créditos confirmados!');
 }
@@ -556,7 +552,7 @@ function renderCard(d,showCredInput){
     </div>
     <div class="demand-meta">
       <span class="badge ${CB[d.cat]||'b-outros'}">${CL[d.cat]||d.cat}</span>
-      <span class="badge ${d.cat==='OUTROS'&&d.cred?'b-pending':done?'b-done':'b-pending'}">${d.cat==='OUTROS'?d.cred?`⟳ ${fmt(d.cred)} acumulados`:'aguardando créditos':done?`✓ ${fmt(d.cred)} créditos`:'aguardando créditos'}</span>
+      <span class="badge ${done?'b-done':'b-pending'}">${done?`✓ ${fmt(d.cred)} créditos`:'aguardando créditos'}</span>
     </div>
     <div class="demand-info">
       <span>${d.resp}</span>
@@ -565,7 +561,7 @@ function renderCard(d,showCredInput){
       ${cu}
     </div>
     ${showCredInput?`<div class="cred-input-wrap">
-      <span class="cred-label">${d.cat==='OUTROS'&&d.cred?`⬡ Adicionar créditos (atual: ${fmt(d.cred)})`:'⬡ Inserir créditos utilizados'}</span>
+      <span class="cred-label">⬡ Inserir créditos utilizados</span>
       <input class="cred-input" type="number" id="ci-${d.id}" placeholder="Ex: 90" min="0" onkeydown="if(event.key==='Enter')saveCred('${d.id}')">
       <button class="btn sm primary" onclick="saveCred('${d.id}')">✓ Confirmar</button>
     </div>`:''}
@@ -589,8 +585,8 @@ function renderCard(d,showCredInput){
 
 // ── Render Design ─────────────────────────────────────────────────
 function renderAll(){
-  const pending=demands.filter(d=>isDesign(d)&&(d.cred===null||d.cat==='OUTROS'));
-  const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&d.cat!=='OUTROS'&&matchMonth(d));
+  const pending=demands.filter(d=>isDesign(d)&&d.cred===null);
+  const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d));
   const filtPending=filterResp==='all'?pending:pending.filter(d=>d.resp===filterResp);
   document.getElementById('demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
   document.getElementById('demand-list').innerHTML=filtPending.length?filtPending.map(d=>renderCard(d,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
