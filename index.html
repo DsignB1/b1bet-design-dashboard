@@ -450,6 +450,19 @@ async function saveCred(id){
   showNotif('Créditos confirmados!');
 }
 
+// ── Adicionar créditos (OUTROS) ───────────────────────────────────
+async function addCred(id){
+  const inp=document.getElementById('ci-'+id),val=parseInt(inp.value);
+  if(isNaN(val)||val<=0){showNotif('Valor inválido.','error');return;}
+  setSyncing(true);
+  const d=demands.find(x=>x.id===id);
+  const newCred=(d.cred||0)+val;
+  const{error}=await sb.from('demandas').update({cred:newCred}).eq('id',id);
+  if(error){setSyncing(false);showNotif('Erro: '+error.message,'error');return;}
+  inp.value='';
+  showNotif(`+${val} adicionado (total: ${newCred})`);
+}
+
 // ── Duplicar ──────────────────────────────────────────────────────
 async function duplicateDemand(id){
   const d=demands.find(x=>x.id===id);if(!d)return;
@@ -561,8 +574,9 @@ function renderCard(d,showCredInput){
       ${cu}
     </div>
     ${showCredInput?`<div class="cred-input-wrap">
-      <span class="cred-label">⬡ Inserir créditos utilizados</span>
+      <span class="cred-label">⬡ Inserir créditos utilizados${d.cat==='OUTROS'&&d.cred?` (acumulado: ${fmt(d.cred)})`:''}</span>
       <input class="cred-input" type="number" id="ci-${d.id}" placeholder="Ex: 90" min="0" onkeydown="if(event.key==='Enter')saveCred('${d.id}')">
+      ${d.cat==='OUTROS'?`<button class="btn sm" onclick="addCred('${d.id}')">+ Adicionar</button>`:''}
       <button class="btn sm primary" onclick="saveCred('${d.id}')">✓ Confirmar</button>
     </div>`:''}
     <div class="edit-panel" id="ep-${d.id}">
