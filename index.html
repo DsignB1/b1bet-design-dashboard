@@ -347,7 +347,7 @@ const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros'};
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',filterDoneDate='',ddResp='all',ddCat='all';
-let catCI=null,catCountCI=null,respCI=null;
+let catCI=null,catCountCI=null,respCI=null,chartDates=[];
 let modalOpen=false,activeMonth='all';
 let doneStates={};
 
@@ -713,8 +713,9 @@ function renderDashboard(){
       ctx.fillText(t,topBar.x,topBar.y-3);ctx.restore();
     });
   }};
+  chartDates=allDates;
   if(respCI)respCI.destroy();
-  respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:th.borderColor},stacked:true},y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
+  respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},onClick:(evt,elements)=>{if(!elements.length)return;const date=chartDates[elements[0].index];if(!date)return;const btn=document.querySelector('.nav-item[onclick*="demandas"]');if(btn)switchTab('demandas',btn);const doneBody=document.getElementById('done-body');if(doneBody&&!doneBody.classList.contains('open'))toggleDone('done-body','done-toggle-btn');filterDoneDate=date;document.getElementById('done-date-filter').value=date;renderAll();setTimeout(()=>{const el=document.getElementById('done-list');if(el)el.scrollIntoView({behavior:'smooth'});},100);},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:th.borderColor},stacked:true},y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
   const CATS_ORDER=['CRM','ADS','REDES','INTERNO','OUTROS'];
   const dData={};
   DESIGN_TEAM.forEach(n=>{dData[n]={total:0,cred:0,cats:{}};CATS_ORDER.forEach(c=>dData[n].cats[c]=0);});
