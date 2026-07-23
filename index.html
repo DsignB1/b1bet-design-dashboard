@@ -309,10 +309,15 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
             <div class="chip" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
             <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
           </div>
-          <div class="filters" id="done-cat-filters" style="margin-bottom:14px;margin-top:0">
+          <div class="filters" id="done-cat-filters" style="margin-bottom:8px;margin-top:0">
             <span class="filter-label">Categoria</span>
             <div class="chip active" data-dc="all">Todas</div>
             <div class="chip" data-dc="OUTROS"><span class="dot" style="background:#a3e635"></span>Outros</div>
+          </div>
+          <div class="filters" style="margin-bottom:14px;margin-top:0;align-items:center">
+            <span class="filter-label">Data</span>
+            <input id="done-date-filter" type="date" oninput="filterDoneDate=this.value;renderAll()" style="background:var(--card2);border:0.5px solid var(--border2);border-radius:8px;padding:6px 11px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none">
+            <button class="btn sm" onclick="document.getElementById('done-date-filter').value='';filterDoneDate='';renderAll()" style="font-size:11px">✕ Limpar</button>
           </div>
           <div class="demand-list" id="done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
         </div>
@@ -336,7 +341,7 @@ const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-
 const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros'};
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',ddResp='all',ddCat='all';
+let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',filterDoneDate='',ddResp='all',ddCat='all';
 let catCI=null,catCountCI=null,respCI=null;
 let modalOpen=false,activeMonth='all';
 let doneStates={};
@@ -605,7 +610,7 @@ function renderAll(){
   document.getElementById('demand-count').textContent=`${pending.length} pendente${pending.length!==1?'s':''}`;
   document.getElementById('demand-list').innerHTML=filtPending.length?filtPending.map(d=>renderCard(d,true)).join(''):'<div class="empty">Nenhuma demanda pendente.</div>';
   const searchTerm=(document.getElementById('done-search')?.value||'').toLowerCase().trim();
-  const filtDone=(filterDoneResp==='all'?done:done.filter(d=>d.resp===filterDoneResp)).filter(d=>filterDoneCat==='all'||d.cat===filterDoneCat).filter(d=>!searchTerm||d.title.toLowerCase().includes(searchTerm));
+  const filtDone=(filterDoneResp==='all'?done:done.filter(d=>d.resp===filterDoneResp)).filter(d=>filterDoneCat==='all'||d.cat===filterDoneCat).filter(d=>!filterDoneDate||(d.entrega||d.date)===filterDoneDate).filter(d=>!searchTerm||d.title.toLowerCase().includes(searchTerm));
   document.getElementById('done-count').textContent=String(done.length);
   document.getElementById('done-list').innerHTML=filtDone.length?filtDone.map(d=>renderCard(d,false)).join(''):'<div class="empty">Nenhuma demanda concluída encontrada.</div>';
 }
