@@ -28,6 +28,7 @@
   --orange-light:#2a1408;--green-light:#0a2016;--red-light:#1e0c0c;
   --blue-light:#0c1628;--purple-light:#160e26;--teal-light:#0a1e2c;
 }
+[data-theme="dark"] input[type="date"]{color-scheme:dark}
 html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-serif}
 .app{display:flex;height:100vh;overflow:hidden;background:var(--bg)}
 
@@ -301,23 +302,27 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
           <div style="margin-bottom:12px;margin-top:4px">
             <input id="done-search" type="text" placeholder="🔍 Buscar demanda concluída..." oninput="renderAll()" style="width:100%;background:var(--card2);border:0.5px solid var(--border2);border-radius:8px;padding:9px 14px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none">
           </div>
-          <div class="filters" id="done-filters" style="margin-bottom:8px;margin-top:0">
-            <span class="filter-label">Designer</span>
-            <div class="chip active" data-dv="all">Todos</div>
-            <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
-            <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
-            <div class="chip" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
-            <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
-          </div>
-          <div class="filters" id="done-cat-filters" style="margin-bottom:8px;margin-top:0">
-            <span class="filter-label">Categoria</span>
-            <div class="chip active" data-dc="all">Todas</div>
-            <div class="chip" data-dc="OUTROS"><span class="dot" style="background:#a3e635"></span>Outros</div>
-          </div>
-          <div class="filters" style="margin-bottom:14px;margin-top:0;align-items:center">
-            <span class="filter-label">Data</span>
-            <input id="done-date-filter" type="date" oninput="filterDoneDate=this.value;renderAll()" style="background:var(--card2);border:0.5px solid var(--border2);border-radius:8px;padding:6px 11px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none">
-            <button class="btn sm" onclick="document.getElementById('done-date-filter').value='';filterDoneDate='';renderAll()" style="font-size:11px">✕ Limpar</button>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div class="filters" id="done-filters" style="margin-bottom:8px;margin-top:0">
+                <span class="filter-label">Designer</span>
+                <div class="chip active" data-dv="all">Todos</div>
+                <div class="chip" data-dv="Derick"><span class="dot" style="background:#e91e8c"></span>Derick</div>
+                <div class="chip" data-dv="Alexandre"><span class="dot" style="background:#f0a500"></span>Alexandre</div>
+                <div class="chip" data-dv="Pablo"><span class="dot" style="background:#e53935"></span>Pablo</div>
+                <div class="chip" data-dv="Vinicius"><span class="dot" style="background:#5c6bc0"></span>Vinicius</div>
+              </div>
+              <div class="filters" id="done-cat-filters" style="margin-bottom:0;margin-top:0">
+                <span class="filter-label">Categoria</span>
+                <div class="chip active" data-dc="all">Todas</div>
+                <div class="chip" data-dc="OUTROS"><span class="dot" style="background:#a3e635"></span>Outros</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span class="filter-label">Data</span>
+              <input id="done-date-filter" type="date" oninput="filterDoneDate=this.value;renderAll()" style="background:var(--card2);border:0.5px solid var(--border2);border-radius:8px;padding:6px 11px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;color-scheme:dark light">
+              <button class="btn sm" onclick="document.getElementById('done-date-filter').value='';filterDoneDate='';renderAll()" style="font-size:11px">✕ Limpar</button>
+            </div>
           </div>
           <div class="demand-list" id="done-list"><div class="empty">Nenhuma demanda concluída ainda.</div></div>
         </div>
