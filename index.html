@@ -100,7 +100,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
 .badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-weight:500}
 .b-crm{background:#ddeeff;color:#1a5fa8}.b-ads{background:#fef3c7;color:#92400e}
 .b-redes{background:#fff0dd;color:#a05a00}.b-interno{background:#f0f0ee;color:#666}
-.b-outros{background:var(--purple-light);color:var(--purple)}
+.b-outros{background:var(--purple-light);color:var(--purple)}.b-gamif{background:#fde8ec;color:#be1236}
 .b-pending{background:var(--orange-light);color:var(--orange)}
 .b-done{background:var(--green-light);color:var(--green)}
 .demand-info{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--text3);flex-wrap:wrap}
@@ -222,6 +222,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
         <div class="chip" data-df="dcat" data-dv="REDES">Redes</div>
         <div class="chip" data-df="dcat" data-dv="INTERNO">Interno</div>
         <div class="chip" data-df="dcat" data-dv="OUTROS">Outros</div>
+        <div class="chip" data-df="dcat" data-dv="GAMIFICACAO">Gamificação</div>
       </div>
       <div class="kpi-row" id="d-kpis">
         <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent">0</div><div class="kpi-sub">total confirmado</div></div></div>
@@ -267,7 +268,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
           </div>
           <div class="field"><label>Título da demanda</label><input type="text" id="f-title" placeholder="Ex: Híbrida RICO TIGER"></div>
           <div class="field"><label>Categoria</label>
-            <select id="f-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select>
+            <select id="f-cat"><option value="">Selecionar...</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option><option>GAMIFICACAO</option></select>
           </div>
           <div class="field"><label>Data de postagem</label><input type="date" id="f-post"></div>
           <div class="field"><label>Link ClickUp</label><input type="text" id="f-clickup" placeholder="https://app.clickup.com/..."></div>
@@ -341,9 +342,9 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
 const DESIGN_TEAM=['Derick','Alexandre','Pablo','Vinicius'];
 const RC={Derick:'#e91e8c',Alexandre:'#f0a500',Pablo:'#e53935',Vinicius:'#5c6bc0'};
-const CC={CRM:'#38bdf8',ADS:'#FBBF24',REDES:'#c084fc',INTERNO:'#fb923c',OUTROS:'#a3e635'};
-const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-outros'};
-const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros'};
+const CC={CRM:'#38bdf8',ADS:'#FBBF24',REDES:'#c084fc',INTERNO:'#fb923c',OUTROS:'#a3e635',GAMIFICACAO:'#f43f5e'};
+const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-outros',GAMIFICACAO:'b-gamif'};
+const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros',GAMIFICACAO:'Gamificação'};
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
 let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',filterDoneDate='',ddResp='all',ddCat='all';
@@ -592,7 +593,7 @@ function renderCard(d,showCredInput){
     <div class="edit-panel" id="ep-${d.id}">
       <div class="form-grid" style="margin-bottom:12px">
         ${editResp}
-        <div class="field"><label>Categoria</label><select id="ec-${d.id}"><option value="">Manter: ${CL[d.cat]||d.cat}</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option></select></div>
+        <div class="field"><label>Categoria</label><select id="ec-${d.id}"><option value="">Manter: ${CL[d.cat]||d.cat}</option><option>CRM</option><option>ADS</option><option>REDES</option><option>INTERNO</option><option>OUTROS</option><option>GAMIFICACAO</option></select></div>
         <div class="field"><label>Título</label><input type="text" id="et-${d.id}" placeholder="Manter: ${d.title}"></div>
         <div class="field"><label>Créditos</label><input type="number" id="ecr-${d.id}" placeholder="${d.cred!==null?d.cred:'—'}" min="0"></div>
         <div class="field"><label>Data da entrega</label><input type="date" id="ed-${d.id}" value="${d.date||''}"></div>
@@ -687,7 +688,7 @@ function renderDashboard(){
   const allDates=activeMonth==='all'
     ?[...new Set(allDemandas.map(d=>d.entrega||d.date).filter(Boolean))].sort()
     :getBusinessDays(activeMonth);
-  const CATS=['CRM','ADS','REDES','INTERNO','OUTROS'];
+  const CATS=['CRM','ADS','REDES','INTERNO','OUTROS','GAMIFICACAO'];
   const stackedDatasets=CATS.map(cat=>({label:CL[cat],data:allDates.map(date=>allDemandas.filter(d=>(d.entrega||d.date)===date&&d.cat===cat).length),backgroundColor:CC[cat],stack:'stack'})).filter(ds=>ds.data.some(v=>v>0));
   document.getElementById('d-leg-resp').innerHTML=stackedDatasets.length?stackedDatasets.map(ds=>`<span class="leg-item"><span class="leg-dot" style="background:${ds.backgroundColor}"></span>${ds.label}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
   const stackedPlugin={id:'stackedLabels',afterDatasetsDraw(chart){
@@ -716,7 +717,7 @@ function renderDashboard(){
   chartDates=allDates;
   if(respCI)respCI.destroy();
   respCI=new Chart(document.getElementById('d-resp'),{type:'bar',data:{labels:allDates.map(d=>fmtDate(d)),datasets:stackedDatasets},plugins:[stackedPlugin],options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:20}},onClick:(evt,elements)=>{if(!elements.length)return;const date=chartDates[elements[0].index];if(!date)return;const btn=document.querySelector('.nav-item[onclick*="demandas"]');if(btn)switchTab('demandas',btn);const doneBody=document.getElementById('done-body');if(doneBody&&!doneBody.classList.contains('open'))toggleDone('done-body','done-toggle-btn');filterDoneDate=date;document.getElementById('done-date-filter').value=date;renderAll();setTimeout(()=>{const el=document.getElementById('done-list');if(el)el.scrollIntoView({behavior:'smooth'});},100);},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:th.borderColor},stacked:true},y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true,stacked:true}}}});
-  const CATS_ORDER=['CRM','ADS','REDES','INTERNO','OUTROS'];
+  const CATS_ORDER=['CRM','ADS','REDES','INTERNO','OUTROS','GAMIFICACAO'];
   const dData={};
   DESIGN_TEAM.forEach(n=>{dData[n]={total:0,cred:0,cats:{}};CATS_ORDER.forEach(c=>dData[n].cats[c]=0);});
   done.forEach(d=>{if(dData[d.resp]){dData[d.resp].total++;dData[d.resp].cred+=(d.cred||0);dData[d.resp].cats[d.cat]=(dData[d.resp].cats[d.cat]||0)+1;}});
