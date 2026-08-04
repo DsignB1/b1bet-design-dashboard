@@ -247,6 +247,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
         <div class="legend" id="d-leg-resp"></div>
         <div style="position:relative;width:100%;height:180px"><canvas id="d-resp"></canvas></div>
       </div>
+      <div id="d-destaque"></div>
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">Ranking — créditos acumulados</div>
         <div id="d-ranking"><div class="empty">Nenhuma entrega concluída ainda.</div></div>
@@ -346,6 +347,8 @@ const CC={CRM:'#38bdf8',ADS:'#FBBF24',REDES:'#c084fc',INTERNO:'#fb923c',OUTROS:'
 const CB={CRM:'b-crm',ADS:'b-ads',REDES:'b-redes',INTERNO:'b-interno',OUTROS:'b-outros',GAMIFICACAO:'b-gamif'};
 const CL={CRM:'CRM',ADS:'ADS',REDES:'Redes',INTERNO:'Interno',OUTROS:'Outros',GAMIFICACAO:'Gamificação'};
 const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const CW={GAMIFICACAO:10,ADS:5,CRM:4,REDES:3,INTERNO:2,OUTROS:1};
+function weightedScore(d){return(d.cred||0)*(CW[d.cat]||1);};
 
 let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',filterDoneDate='',ddResp='all',ddCat='all';
 let catCI=null,catCountCI=null,respCI=null,chartDates=[];
@@ -754,6 +757,28 @@ function renderDashboard(){
       <span style="min-width:28px;text-align:right;flex-shrink:0">${deltaHTML}</span>
     </div>`;
   }).join(''):'<div class="empty">Nenhuma entrega concluída ainda.</div>';
+
+  // ── Designer do Mês ───────────────────────────────────────────────
+  const scoreMap={};
+  DESIGN_TEAM.forEach(n=>scoreMap[n]=0);
+  done.forEach(d=>{if(scoreMap[d.resp]!==undefined)scoreMap[d.resp]+=weightedScore(d);});
+  const topEntry=DESIGN_TEAM.map(n=>[n,scoreMap[n]]).filter(([,s])=>s>0).sort((a,b)=>b[1]-a[1])[0];
+  const destaqueEl=document.getElementById('d-destaque');
+  if(topEntry&&activeMonth!=='all'){
+    const[topName]=topEntry;
+    const color=RC[topName]||'#999';
+    const mes=MONTHS[parseInt(activeMonth.split('-')[1])-1];
+    destaqueEl.innerHTML=`<div style="background:linear-gradient(135deg,${color}22,${color}08);border:0.5px solid ${color}55;border-radius:12px;padding:16px 22px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+      <span style="width:44px;height:44px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏆</span>
+      <div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Designer do mês — ${mes}</div>
+        <div style="font-size:20px;font-weight:700;color:${color};font-family:'Plus Jakarta Sans',sans-serif">${topName}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${fmt(scoreMap[topName])} pontos ponderados · ${dData[topName]?.total||0} entregas · ${fmt(dData[topName]?.cred||0)} créditos</div>
+      </div>
+    </div>`;
+  } else {
+    destaqueEl.innerHTML='';
+  }
 }
 
 // ── Filtros ───────────────────────────────────────────────────────
