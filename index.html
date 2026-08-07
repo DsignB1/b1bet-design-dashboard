@@ -916,16 +916,16 @@ function renderGerencial(){
     done.forEach(d=>{const ref=d.entrega||d.date;if(ref&&byDay[ref]!==undefined)byDay[ref]++;});
     const bgs=['rgba(128,128,128,0.1)','rgba(245,130,45,0.25)','rgba(245,130,45,0.5)','rgba(245,130,45,0.75)','rgba(245,130,45,1)'];
     const firstDow=new Date(hy,hm-1,1).getDay();
-    heatEl.innerHTML=`<div>
-      <div style="display:grid;grid-template-columns:repeat(7,18px);gap:3px;margin-bottom:4px">
-        ${['D','S','T','Q','Q','S','S'].map(l=>`<div style="width:18px;font-size:8px;color:var(--text3);text-align:center">${l}</div>`).join('')}
+    heatEl.innerHTML=`<div style="width:100%">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px">
+        ${['D','S','T','Q','Q','S','S'].map(l=>`<div style="font-size:9px;color:var(--text3);text-align:center">${l}</div>`).join('')}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(7,18px);gap:3px">
-        ${Array(firstDow).fill('<div style="width:18px;height:18px"></div>').join('')}
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+        ${Array(firstDow).fill('<div style="aspect-ratio:1"></div>').join('')}
         ${allCalDays.map(day=>{
           const cnt=byDay[day];
           const lvl=cnt===0?0:cnt===1?1:cnt<=3?2:cnt<=6?3:4;
-          return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="width:18px;height:18px;border-radius:3px;background:${bgs[lvl]}"></div>`;
+          return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="aspect-ratio:1;border-radius:4px;background:${bgs[lvl]}"></div>`;
         }).join('')}
       </div>
       <div style="display:flex;align-items:center;gap:3px;margin-top:10px;justify-content:flex-end">
