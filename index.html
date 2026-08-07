@@ -803,6 +803,29 @@ function renderDashboard(){
 
 }
 
+// ── Tooltip Ranking ───────────────────────────────────────────────
+function showRankTip(name,evt){
+  let tip=document.getElementById('g-rank-tip');
+  if(!tip){tip=document.createElement('div');tip.id='g-rank-tip';tip.style.cssText='position:fixed;z-index:9999;background:var(--card2);border:0.5px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--text);pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.3);min-width:210px;display:none';document.body.appendChild(tip);}
+  const des=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d)&&d.resp===name);
+  const byCat={};des.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+1;});
+  const total=Object.entries(byCat).reduce((a,[cat,n])=>a+(CW[cat]||1)*n,0);
+  const rows=Object.entries(byCat).sort((a,b)=>(CW[b[0]]||1)*b[1]-(CW[a[0]]||1)*a[1]).map(([cat,n])=>{
+    const w=CW[cat]||1,pts=w*n;
+    return`<div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:5px"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${CC[cat]||'#999'};margin-right:6px"></span>${CL[cat]||cat}</span><span style="color:var(--text3)">${n} × ${w} = <b style="color:var(--text)">${pts} pts</b></span></div>`;
+  }).join('');
+  tip.innerHTML=`<div style="font-weight:700;margin-bottom:10px;color:${RC[name]||'#999'};font-family:'Plus Jakarta Sans',sans-serif">${name}</div>${rows}<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border2);display:flex;justify-content:space-between"><span style="color:var(--text3)">Total</span><b>${total} pts</b></div>`;
+  tip.style.display='block';
+  moveRankTip(evt);
+}
+function moveRankTip(evt){
+  const tip=document.getElementById('g-rank-tip');if(!tip)return;
+  const x=evt.clientX+16,y=evt.clientY-10;
+  tip.style.left=(x+tip.offsetWidth>window.innerWidth?x-tip.offsetWidth-28:x)+'px';
+  tip.style.top=(y+tip.offsetHeight>window.innerHeight?y-tip.offsetHeight:y)+'px';
+}
+function hideRankTip(){const tip=document.getElementById('g-rank-tip');if(tip)tip.style.display='none';}
+
 // ── Gerencial ─────────────────────────────────────────────────────
 function renderGerencial(){
   const th=getChartTheme();
@@ -851,7 +874,7 @@ function renderGerencial(){
       const color=RC[r.name]||'#999';
       const isFirst=i===0&&r.score>0;
       const barPct=Math.round(r.score/maxScore*100);
-      return`<div style="margin-bottom:${isFirst?'14':'10'}px">
+      return`<div onmouseenter="showRankTip('${r.name}',event)" onmousemove="moveRankTip(event)" onmouseleave="hideRankTip()" style="margin-bottom:${isFirst?'14':'10'}px;cursor:default;border-radius:6px;padding:2px 4px;transition:background .15s" onmouseover="this.style.background='rgba(128,128,128,0.07)'" onmouseout="this.style.background='transparent'">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
           <span style="font-size:${isFirst?'16':'13'}px;width:26px">${r.score>0?medals[i]:'—'}</span>
           <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
@@ -916,22 +939,46 @@ function renderGerencial(){
     done.forEach(d=>{const ref=d.entrega||d.date;if(ref&&byDay[ref]!==undefined)byDay[ref]++;});
     const bgs=['rgba(128,128,128,0.1)','rgba(245,130,45,0.25)','rgba(245,130,45,0.5)','rgba(245,130,45,0.75)','rgba(245,130,45,1)'];
     const firstDow=new Date(hy,hm-1,1).getDay();
-    heatEl.innerHTML=`<div>
-      <div style="display:grid;grid-template-columns:repeat(7,26px);gap:4px;margin-bottom:4px">
-        ${['D','S','T','Q','Q','S','S'].map(l=>`<div style="width:26px;font-size:9px;color:var(--text3);text-align:center">${l}</div>`).join('')}
+    // stats
+    const daysWithDel=allCalDays.filter(d=>byDay[d]>0);
+    const bestDay=daysWithDel.length?daysWithDel.reduce((b,d)=>byDay[d]>byDay[b]?d:b,daysWithDel[0]):null;
+    let maxStreak=0,streak=0;
+    allCalDays.forEach(d=>{if(byDay[d]>0){streak++;maxStreak=Math.max(maxStreak,streak);}else{streak=0;}});
+    heatEl.innerHTML=`<div style="display:flex;gap:24px;align-items:flex-start">
+      <div>
+        <div style="display:grid;grid-template-columns:repeat(7,26px);gap:4px;margin-bottom:4px">
+          ${['D','S','T','Q','Q','S','S'].map(l=>`<div style="width:26px;font-size:9px;color:var(--text3);text-align:center">${l}</div>`).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,26px);gap:4px">
+          ${Array(firstDow).fill('<div style="width:26px;height:26px"></div>').join('')}
+          ${allCalDays.map(day=>{
+            const cnt=byDay[day];
+            const lvl=cnt===0?0:cnt===1?1:cnt<=3?2:cnt<=6?3:4;
+            return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="width:26px;height:26px;border-radius:4px;background:${bgs[lvl]}"></div>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;margin-top:10px">
+          <span style="font-size:9px;color:var(--text3);margin-right:2px">Menos</span>
+          ${bgs.map(b=>`<div style="width:12px;height:12px;border-radius:2px;background:${b}"></div>`).join('')}
+          <span style="font-size:9px;color:var(--text3);margin-left:2px">Mais</span>
+        </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(7,26px);gap:4px">
-        ${Array(firstDow).fill('<div style="width:26px;height:26px"></div>').join('')}
-        ${allCalDays.map(day=>{
-          const cnt=byDay[day];
-          const lvl=cnt===0?0:cnt===1?1:cnt<=3?2:cnt<=6?3:4;
-          return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="width:26px;height:26px;border-radius:4px;background:${bgs[lvl]}"></div>`;
-        }).join('')}
-      </div>
-      <div style="display:flex;align-items:center;gap:3px;margin-top:10px">
-        <span style="font-size:9px;color:var(--text3);margin-right:2px">Menos</span>
-        ${bgs.map(b=>`<div style="width:12px;height:12px;border-radius:2px;background:${b}"></div>`).join('')}
-        <span style="font-size:9px;color:var(--text3);margin-left:2px">Mais</span>
+      <div style="display:flex;flex-direction:column;gap:18px;padding-top:20px">
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Dia mais produtivo</div>
+          <div style="font-size:20px;font-weight:700;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif">${bestDay?fmtDate(bestDay):'—'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${bestDay?`${byDay[bestDay]} entrega${byDay[bestDay]!==1?'s':''}`:''}</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Dias com entrega</div>
+          <div style="font-size:20px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif">${daysWithDel.length}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">de ${allCalDays.length} dias no mês</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Maior sequência</div>
+          <div style="font-size:20px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif">${maxStreak}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">dia${maxStreak!==1?'s':''} consecutivos</div>
+        </div>
       </div>
     </div>`;
   } else {
