@@ -356,8 +356,8 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
         <div class="card">
-          <div class="card-title">Ranking ponderado</div>
-          <div style="position:relative;width:100%;height:180px"><canvas id="g-rank"></canvas></div>
+          <div class="card-title">Categorias por designer</div>
+          <div style="position:relative;width:100%;height:200px"><canvas id="g-catdes"></canvas></div>
         </div>
         <div class="card">
           <div class="card-title">Mapa de calor — produtividade diária</div>
@@ -387,7 +387,7 @@ function weightedScore(d){return(d.cred||0)*(CW[d.cat]||1);};
 
 let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',filterDoneDate='',ddResp='all',ddCat='all';
 let catCI=null,catCountCI=null,respCI=null,chartDates=[];
-let gCatCI=null,gTrendCI=null,gRankCI=null,gGaugeCI=null;
+let gCatCI=null,gTrendCI=null,gRankCI=null,gGaugeCI=null,gCatDesCI=null;
 let modalOpen=false,activeMonth='all';
 let doneStates={};
 
@@ -812,40 +812,58 @@ function renderGerencial(){
   const avg=done.length?Math.round(total/done.length):0;
   const pct=done.length+pending.length>0?Math.round(done.length/(done.length+pending.length)*100):0;
 
-  // dias úteis restantes no mês
-  let diasRestantes=0;
-  if(activeMonth!=='all'){
-    const hoje=new Date(),todayStr=hoje.toISOString().split('T')[0];
-    const allBiz=getBusinessDays(activeMonth);
-    diasRestantes=allBiz.filter(d=>d>todayStr).length;
+  // Mês anterior para comparativos
+  const prevMonth=activeMonth!=='all'?getPrevMonth(activeMonth):null;
+  const donePrev=prevMonth?demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,prevMonth)):[];
+  const totalPrev=donePrev.reduce((a,d)=>a+d.cred,0);
+  const avgPrev=donePrev.length?Math.round(totalPrev/donePrev.length):0;
+  const pctPrev=donePrev.length+pending.length>0?Math.round(donePrev.length/(donePrev.length+pending.length)*100):0;
+  function varBadge(cur,prev){
+    if(!prevMonth||activeMonth==='all'||!prev)return'';
+    const diff=Math.round((cur-prev)/prev*100);
+    const up=diff>=0;
+    return`<span style="font-size:10px;font-weight:600;color:${up?'#4ade80':'#f87171'};margin-left:6px">${up?'↑':'↓'}${Math.abs(diff)}%</span>`;
+  }
+  function varBadgeAbs(cur,prev){
+    if(!prevMonth||activeMonth==='all')return'';
+    const diff=cur-prev;const up=diff>=0;
+    return`<span style="font-size:10px;font-weight:600;color:${up?'#4ade80':'#f87171'};margin-left:6px">${up?'+':''}${diff}</span>`;
   }
 
-  // KPIs
+  // KPIs comparativos
   document.getElementById('g-kpis').innerHTML=`
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">total no período</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">concluídas</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="kpi-label">Dias úteis restantes</div><div class="kpi-val">${activeMonth==='all'?'—':diasRestantes}</div><div class="kpi-sub">no mês atual</div></div></div>`;
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos${varBadge(total,totalPrev)}</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">${prevMonth?`${fmt(totalPrev)} no mês anterior`:'total no período'}</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas${varBadgeAbs(done.length,donePrev.length)}</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">${prevMonth?`${donePrev.length} no mês anterior`:'concluídas'}</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média${varBadge(avg,avgPrev)}</div><div class="kpi-val">${avg}</div><div class="kpi-sub">${prevMonth?`${avgPrev} no mês anterior`:'créditos / entrega'}</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="kpi-label">Taxa conclusão${varBadgeAbs(pct,pctPrev)}</div><div class="kpi-val">${pct}%</div><div class="kpi-sub">${prevMonth?`${pctPrev}% no mês anterior`:'entregas / demandas'}</div></div></div>`;
 
-  // Designer do mês
+  // Ranking unificado (Designer do mês + posições)
   const scoreMap={};DESIGN_TEAM.forEach(n=>scoreMap[n]=0);
   done.forEach(d=>{if(scoreMap[d.resp]!==undefined)scoreMap[d.resp]+=weightedScore(d);});
-  const top=DESIGN_TEAM.map(n=>[n,scoreMap[n]]).filter(([,s])=>s>0).sort((a,b)=>b[1]-a[1])[0];
+  const ranked=DESIGN_TEAM.map(n=>({name:n,score:scoreMap[n],del:done.filter(d=>d.resp===n).length,cred:done.filter(d=>d.resp===n).reduce((a,d)=>a+d.cred,0)})).sort((a,b)=>b.score-a.score);
+  const medals=['🥇','🥈','🥉','4º'];
+  const mes=activeMonth!=='all'?MONTHS[parseInt(activeMonth.split('-')[1])-1]:'todos os meses';
   const destaqueCard=document.getElementById('g-destaque-card');
-  if(top&&activeMonth!=='all'){
-    const[topName]=top;const color=RC[topName]||'#999';
-    const mes=MONTHS[parseInt(activeMonth.split('-')[1])-1];
-    const doneDes=done.filter(d=>d.resp===topName);
-    destaqueCard.innerHTML=`<div style="text-align:center;padding:8px 0">
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Designer do mês — ${mes}</div>
-      <div style="width:56px;height:56px;border-radius:50%;background:${color};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px">🏆</div>
-      <div style="font-size:22px;font-weight:700;color:${color};font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px">${topName}</div>
-      <div style="font-size:12px;color:var(--text2)">${doneDes.length} entregas · ${fmt(doneDes.reduce((a,d)=>a+d.cred,0))} créditos</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">${fmt(scoreMap[topName])} pts ponderados</div>
-    </div>`;
-  } else {
-    destaqueCard.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Selecione um mês para ver o destaque</div>`;
-  }
+  const maxScore=ranked[0]?.score||1;
+  destaqueCard.innerHTML=`<div style="width:100%">
+    <div class="card-title" style="margin-bottom:14px">Ranking — ${mes}</div>
+    ${ranked.map((r,i)=>{
+      const color=RC[r.name]||'#999';
+      const isFirst=i===0&&r.score>0;
+      const barPct=Math.round(r.score/maxScore*100);
+      return`<div style="margin-bottom:${isFirst?'14':'10'}px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+          <span style="font-size:${isFirst?'16':'13'}px;width:26px">${r.score>0?medals[i]:'—'}</span>
+          <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>
+          <span style="font-size:${isFirst?'15':'13'}px;font-weight:${isFirst?'700':'500'};color:${isFirst?color:'var(--text)'};flex:1">${r.name}</span>
+          <span style="font-size:11px;color:var(--text3)">${fmt(r.score)} pts</span>
+        </div>
+        <div style="height:4px;background:rgba(128,128,128,0.12);border-radius:2px;overflow:hidden;margin-left:34px">
+          <div style="height:100%;width:${barPct}%;background:${color};border-radius:2px"></div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 
   // Donut categoria
   const byCat={};done.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+1});
@@ -861,54 +879,86 @@ function renderGerencial(){
   gGaugeCI=new Chart(document.getElementById('g-gauge'),{type:'doughnut',data:{datasets:[{data:[pct,100-pct],backgroundColor:[gaugeColor,'rgba(128,128,128,0.1)'],borderWidth:0}]},options:{rotation:-90,circumference:180,cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
   document.getElementById('g-gauge-label').innerHTML=`<div style="font-size:28px;font-weight:700;color:${gaugeColor};font-family:'Plus Jakarta Sans',sans-serif">${pct}%</div><div style="font-size:11px;color:var(--text3)">${done.length} de ${done.length+pending.length}</div>`;
 
-  // Linha evolução mensal
+  // Linha evolução mensal com meta
   const now=new Date();
   const trendMonths=[];
   for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);trendMonths.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}
   const trendCred=trendMonths.map(ym=>demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,ym)).reduce((a,d)=>a+d.cred,0));
   const trendDel=trendMonths.map(ym=>demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,ym)).length);
   const trendLabels=trendMonths.map(ym=>{const[y,m]=ym.split('-');return`${MONTHS[parseInt(m)-1].slice(0,3)}/${y.slice(2)}`;});
+  const nonZero=trendCred.filter(v=>v>0);
+  const metaCred=nonZero.length?Math.round(nonZero.reduce((a,v)=>a+v,0)/nonZero.length):0;
   if(gTrendCI)gTrendCI.destroy();
-  gTrendCI=new Chart(document.getElementById('g-trend'),{type:'line',data:{labels:trendLabels,datasets:[{label:'Créditos',data:trendCred,borderColor:'#F5822D',backgroundColor:'rgba(245,130,45,0.1)',tension:.4,fill:true,yAxisID:'y'},{label:'Entregas',data:trendDel,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.1)',tension:.4,fill:true,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:th.tickColor,font:{size:11}}}},scales:{y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true},y1:{position:'right',grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true}}}});
+  gTrendCI=new Chart(document.getElementById('g-trend'),{type:'line',data:{labels:trendLabels,datasets:[
+    {label:'Créditos',data:trendCred,borderColor:'#F5822D',backgroundColor:'rgba(245,130,45,0.1)',tension:.4,fill:true,yAxisID:'y'},
+    {label:'Entregas',data:trendDel,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.1)',tension:.4,fill:true,yAxisID:'y1'},
+    {label:'Média histórica',data:trendLabels.map(()=>metaCred),borderColor:'rgba(245,130,45,0.4)',borderDash:[6,4],borderWidth:1.5,pointRadius:0,fill:false,yAxisID:'y',tension:0}
+  ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:th.tickColor,font:{size:11},filter:item=>item.text!=='Média histórica'||metaCred>0}}},scales:{y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true},y1:{position:'right',grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true}}}});
 
-  // Ranking ponderado horizontal
-  const rankData=DESIGN_TEAM.map(n=>({name:n,score:done.filter(d=>d.resp===n).reduce((a,d)=>a+weightedScore(d),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
-  if(gRankCI)gRankCI.destroy();
-  if(rankData.length){gRankCI=new Chart(document.getElementById('g-rank'),{type:'bar',data:{labels:rankData.map(x=>x.name),datasets:[{data:rankData.map(x=>x.score),backgroundColor:rankData.map(x=>RC[x.name]||'#999'),borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.x)} pts ponderados`}}},scales:{x:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true},y:{grid:{display:false},ticks:{color:th.tickColor,font:{size:12},font:{weight:'500'}},border:{color:'transparent'}}}}});}
+  // Categorias por designer (stacked bar)
+  const catDesDatasets=Object.keys(CC).map(cat=>({
+    label:CL[cat]||cat,
+    data:DESIGN_TEAM.map(n=>done.filter(d=>d.resp===n&&d.cat===cat).length),
+    backgroundColor:CC[cat]||'#999',
+    borderRadius:3,borderSkipped:false
+  })).filter(ds=>ds.data.some(v=>v>0));
+  if(gCatDesCI)gCatDesCI.destroy();
+  if(catDesDatasets.length){gCatDesCI=new Chart(document.getElementById('g-catdes'),{type:'bar',data:{labels:DESIGN_TEAM,datasets:catDesDatasets},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:th.tickColor,font:{size:10},boxWidth:10,padding:8}},tooltip:{mode:'index',intersect:false}},scales:{x:{stacked:true,grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true},y:{stacked:true,grid:{display:false},ticks:{color:th.tickColor,font:{size:12}},border:{color:'transparent'}}}}});}
 
-  // Heatmap
+  // Heatmap estilo GitHub
   const heatEl=document.getElementById('g-heatmap');
   if(activeMonth!=='all'){
-    const allDays=getBusinessDays(activeMonth);
     const allCalDays=[];
     const[hy,hm]=activeMonth.split('-').map(Number);
     const hd=new Date(hy,hm-1,1);
     while(hd.getMonth()===hm-1){allCalDays.push(`${hy}-${String(hm).padStart(2,'0')}-${String(hd.getDate()).padStart(2,'0')}`);hd.setDate(hd.getDate()+1);}
     const byDay={};allCalDays.forEach(d=>byDay[d]=0);
     done.forEach(d=>{const ref=d.entrega||d.date;if(ref&&byDay[ref]!==undefined)byDay[ref]++;});
-    const maxVal=Math.max(...Object.values(byDay),1);
-    heatEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
-      ${['S','T','Q','Q','S','S','D'].map(d=>`<div style="text-align:center;font-size:9px;color:var(--text3);padding-bottom:2px">${d}</div>`).join('')}
-      ${Array(new Date(hy,hm-1,1).getDay()).fill('<div></div>').join('')}
-      ${allCalDays.map(day=>{
-        const cnt=byDay[day];
-        const opacity=cnt?0.2+cnt/maxVal*0.8:0.05;
-        const isWeekend=[0,6].includes(new Date(day).getDay());
-        const bg=cnt?`rgba(245,130,45,${opacity})`:(isWeekend?'rgba(128,128,128,0.05)':'rgba(128,128,128,0.08)');
-        return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="aspect-ratio:1;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:9px;color:${cnt?'var(--text)':'var(--text3)'}${cnt?';font-weight:600':''}">${cnt||''}</div>`;
-      }).join('')}
+    const bgs=['rgba(128,128,128,0.1)','rgba(245,130,45,0.25)','rgba(245,130,45,0.5)','rgba(245,130,45,0.75)','rgba(245,130,45,1)'];
+    const firstDow=new Date(hy,hm-1,1).getDay();
+    heatEl.innerHTML=`<div>
+      <div style="display:grid;grid-template-columns:repeat(7,18px);gap:3px;margin-bottom:4px">
+        ${['D','S','T','Q','Q','S','S'].map(l=>`<div style="width:18px;font-size:8px;color:var(--text3);text-align:center">${l}</div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,18px);gap:3px">
+        ${Array(firstDow).fill('<div style="width:18px;height:18px"></div>').join('')}
+        ${allCalDays.map(day=>{
+          const cnt=byDay[day];
+          const lvl=cnt===0?0:cnt===1?1:cnt<=3?2:cnt<=6?3:4;
+          return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="width:18px;height:18px;border-radius:3px;background:${bgs[lvl]}"></div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:3px;margin-top:10px;justify-content:flex-end">
+        <span style="font-size:9px;color:var(--text3);margin-right:2px">Menos</span>
+        ${bgs.map(b=>`<div style="width:12px;height:12px;border-radius:2px;background:${b}"></div>`).join('')}
+        <span style="font-size:9px;color:var(--text3);margin-left:2px">Mais</span>
+      </div>
     </div>`;
   } else {
     heatEl.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0">Selecione um mês para ver o mapa de calor</div>';
   }
 
-  // Tempo médio de entrega
-  const comDatas=done.filter(d=>d.date&&d.entrega&&d.entrega>d.date);
-  const avgDays=comDatas.length?Math.round(comDatas.reduce((a,d)=>{const diff=(new Date(d.entrega)-new Date(d.date))/(1000*60*60*24);return a+diff;},0)/comDatas.length):null;
-  document.getElementById('g-avgtime-card').innerHTML=`<div style="display:flex;align-items:center;gap:20px">
-    <div><div class="card-title" style="margin-bottom:6px">Tempo médio de entrega</div>
-    ${avgDays!==null?`<div style="font-size:32px;font-weight:700;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif">${avgDays} <span style="font-size:14px;font-weight:400;color:var(--text2)">dias úteis em média</span></div><div style="font-size:12px;color:var(--text3);margin-top:4px">baseado em ${comDatas.length} demanda${comDatas.length!==1?'s':''} com data de entrega registrada</div>`:`<div style="color:var(--text3);font-size:13px">Dados insuficientes — as entregas precisam do campo entrega preenchido</div>`}
-    </div></div>`;
+  // Tempo médio de entrega por designer
+  const maxAvgDays=Math.max(1,...DESIGN_TEAM.map(n=>{
+    const des=done.filter(d=>d.resp===n&&d.date&&d.entrega&&d.entrega>d.date);
+    return des.length?Math.round(des.reduce((s,d)=>{return s+(new Date(d.entrega)-new Date(d.date))/(1000*60*60*24);},0)/des.length):0;
+  }));
+  document.getElementById('g-avgtime-card').innerHTML=`<div>
+    <div class="card-title" style="margin-bottom:14px">Tempo médio de entrega por designer</div>
+    ${DESIGN_TEAM.map(n=>{
+      const des=done.filter(d=>d.resp===n&&d.date&&d.entrega&&d.entrega>d.date);
+      const avgD=des.length?Math.round(des.reduce((s,d)=>{return s+(new Date(d.entrega)-new Date(d.date))/(1000*60*60*24);},0)/des.length):null;
+      const color=RC[n]||'#999';
+      const barPct=avgD?Math.round(avgD/maxAvgDays*100):0;
+      return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+        <div style="width:80px;font-size:13px;font-weight:500;color:var(--text2)">${n}</div>
+        <div style="flex:1;height:8px;background:rgba(128,128,128,0.12);border-radius:4px;overflow:hidden">
+          <div style="height:100%;width:${barPct}%;background:${color};border-radius:4px"></div>
+        </div>
+        <div style="width:70px;font-size:12px;color:var(--text3);text-align:right">${avgD!==null?`${avgD} dia${avgD!==1?'s':''}`:des.length===0?'sem dados':'—'}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 // ── Filtros ───────────────────────────────────────────────────────
