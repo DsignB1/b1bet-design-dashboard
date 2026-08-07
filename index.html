@@ -184,6 +184,10 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
         Demandas
       </button>
+      <button class="nav-item" onclick="switchTab('gerencial',this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        Gerencial
+      </button>
     </nav>
     <div class="sidebar-footer">
       <span class="sync-indicator"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Conectando...</span></span>
@@ -331,6 +335,38 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
       </div>
     </div>
 
+    <!-- ABA GERENCIAL -->
+    <div class="view" id="view-gerencial">
+      <div class="kpi-row" id="g-kpis" style="margin-bottom:16px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card" id="g-destaque-card" style="display:flex;flex-direction:column;justify-content:center"></div>
+        <div class="card">
+          <div class="card-title">Categoria mais demandada</div>
+          <div class="legend" id="g-leg-cat" style="margin-bottom:8px"></div>
+          <div style="position:relative;width:100%;height:160px"><canvas id="g-cat"></canvas></div>
+        </div>
+        <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="card-title" style="width:100%">Taxa de conclusão</div>
+          <div style="position:relative;width:100%;height:140px"><canvas id="g-gauge"></canvas></div>
+          <div id="g-gauge-label" style="margin-top:-48px;text-align:center;position:relative;z-index:1"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">Evolução mensal — últimos 6 meses</div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="g-trend"></canvas></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="card-title">Ranking ponderado</div>
+          <div style="position:relative;width:100%;height:180px"><canvas id="g-rank"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Mapa de calor — produtividade diária</div>
+          <div id="g-heatmap" style="margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:16px" id="g-avgtime-card"></div>
+    </div>
     <!-- ABA AUDIOVISUAL -->
 
   </div><!-- /.main -->
@@ -352,6 +388,7 @@ function weightedScore(d){return(d.cred||0)*(CW[d.cat]||1);};
 
 let demands=[],filterResp='all',filterDoneResp='all',filterDoneCat='all',filterDoneDate='',ddResp='all',ddCat='all';
 let catCI=null,catCountCI=null,respCI=null,chartDates=[];
+let gCatCI=null,gTrendCI=null,gRankCI=null,gGaugeCI=null;
 let modalOpen=false,activeMonth='all';
 let doneStates={};
 
@@ -369,7 +406,12 @@ function setTheme(theme){
   if(catCI)catCI.destroy(),catCI=null;
   if(catCountCI)catCountCI.destroy(),catCountCI=null;
   if(respCI)respCI.destroy(),respCI=null;
+  if(gCatCI)gCatCI.destroy(),gCatCI=null;
+  if(gTrendCI)gTrendCI.destroy(),gTrendCI=null;
+  if(gRankCI)gRankCI.destroy(),gRankCI=null;
+  if(gGaugeCI)gGaugeCI.destroy(),gGaugeCI=null;
   if(document.getElementById('view-dashboard').classList.contains('active'))renderDashboard();
+  if(document.getElementById('view-gerencial').classList.contains('active'))renderGerencial();
 }
 (function(){
   const saved=localStorage.getItem('b1-theme')||'dark';
@@ -426,6 +468,7 @@ function switchTab(tab,btn){
   btn.classList.add('active');
   document.getElementById('view-'+tab).classList.add('active');
   if(tab==='dashboard')renderDashboard();
+  if(tab==='gerencial')renderGerencial();
 }
 
 
@@ -538,6 +581,7 @@ function applyMonthFilter(){
   activeMonth=(y==='all'||m==='all')?'all':`${y}-${m}`;
   renderAll();
   if(document.getElementById('view-dashboard').classList.contains('active'))renderDashboard();
+  if(document.getElementById('view-gerencial').classList.contains('active'))renderGerencial();
 }
 function matchMonth(d){
   if(activeMonth==='all')return true;
@@ -779,6 +823,114 @@ function renderDashboard(){
   } else {
     destaqueEl.innerHTML='';
   }
+}
+
+// ── Gerencial ─────────────────────────────────────────────────────
+function renderGerencial(){
+  const th=getChartTheme();
+  const done=demands.filter(d=>isDesign(d)&&d.cred!==null&&matchMonth(d));
+  const pending=demands.filter(d=>isDesign(d)&&d.cred===null);
+  const total=done.reduce((a,d)=>a+d.cred,0);
+  const avg=done.length?Math.round(total/done.length):0;
+  const pct=done.length+pending.length>0?Math.round(done.length/(done.length+pending.length)*100):0;
+
+  // dias úteis restantes no mês
+  let diasRestantes=0;
+  if(activeMonth!=='all'){
+    const hoje=new Date(),todayStr=hoje.toISOString().split('T')[0];
+    const allBiz=getBusinessDays(activeMonth);
+    diasRestantes=allBiz.filter(d=>d>todayStr).length;
+  }
+
+  // KPIs
+  document.getElementById('g-kpis').innerHTML=`
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">total no período</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">concluídas</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média</div><div class="kpi-val">${avg}</div><div class="kpi-sub">créditos / entrega</div></div></div>
+    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><div class="kpi-label">Dias úteis restantes</div><div class="kpi-val">${activeMonth==='all'?'—':diasRestantes}</div><div class="kpi-sub">no mês atual</div></div></div>`;
+
+  // Designer do mês
+  const scoreMap={};DESIGN_TEAM.forEach(n=>scoreMap[n]=0);
+  done.forEach(d=>{if(scoreMap[d.resp]!==undefined)scoreMap[d.resp]+=weightedScore(d);});
+  const top=DESIGN_TEAM.map(n=>[n,scoreMap[n]]).filter(([,s])=>s>0).sort((a,b)=>b[1]-a[1])[0];
+  const destaqueCard=document.getElementById('g-destaque-card');
+  if(top&&activeMonth!=='all'){
+    const[topName]=top;const color=RC[topName]||'#999';
+    const mes=MONTHS[parseInt(activeMonth.split('-')[1])-1];
+    const doneDes=done.filter(d=>d.resp===topName);
+    destaqueCard.innerHTML=`<div style="text-align:center;padding:8px 0">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Designer do mês — ${mes}</div>
+      <div style="width:56px;height:56px;border-radius:50%;background:${color};margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:26px">🏆</div>
+      <div style="font-size:22px;font-weight:700;color:${color};font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px">${topName}</div>
+      <div style="font-size:12px;color:var(--text2)">${doneDes.length} entregas · ${fmt(doneDes.reduce((a,d)=>a+d.cred,0))} créditos</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">${fmt(scoreMap[topName])} pts ponderados</div>
+    </div>`;
+  } else {
+    destaqueCard.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Selecione um mês para ver o destaque</div>`;
+  }
+
+  // Donut categoria
+  const byCat={};done.forEach(d=>{byCat[d.cat]=(byCat[d.cat]||0)+1});
+  const cats=Object.keys(byCat).sort((a,b)=>byCat[b]-byCat[a]);
+  const cv=cats.map(c=>byCat[c]),cc=cats.map(c=>CC[c]||'#999');
+  document.getElementById('g-leg-cat').innerHTML=cats.length?cats.map((c,i)=>`<span class="leg-item"><span class="leg-dot" style="background:${cc[i]}"></span>${CL[c]||c} ${cv[i]}</span>`).join(''):'<span style="font-size:11px;color:#999">Sem dados</span>';
+  if(gCatCI)gCatCI.destroy();
+  if(cats.length){gCatCI=new Chart(document.getElementById('g-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
+
+  // Gauge taxa de conclusão
+  const gaugeColor=pct>=70?'#2e7d52':pct>=40?'#f0a500':'#b83232';
+  if(gGaugeCI)gGaugeCI.destroy();
+  gGaugeCI=new Chart(document.getElementById('g-gauge'),{type:'doughnut',data:{datasets:[{data:[pct,100-pct],backgroundColor:[gaugeColor,'rgba(128,128,128,0.1)'],borderWidth:0}]},options:{rotation:-90,circumference:180,cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+  document.getElementById('g-gauge-label').innerHTML=`<div style="font-size:28px;font-weight:700;color:${gaugeColor};font-family:'Plus Jakarta Sans',sans-serif">${pct}%</div><div style="font-size:11px;color:var(--text3)">${done.length} de ${done.length+pending.length}</div>`;
+
+  // Linha evolução mensal
+  const now=new Date();
+  const trendMonths=[];
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);trendMonths.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}
+  const trendCred=trendMonths.map(ym=>demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,ym)).reduce((a,d)=>a+d.cred,0));
+  const trendDel=trendMonths.map(ym=>demands.filter(d=>isDesign(d)&&d.cred!==null&&matchSpecificMonth(d,ym)).length);
+  const trendLabels=trendMonths.map(ym=>{const[y,m]=ym.split('-');return`${MONTHS[parseInt(m)-1].slice(0,3)}/${y.slice(2)}`;});
+  if(gTrendCI)gTrendCI.destroy();
+  gTrendCI=new Chart(document.getElementById('g-trend'),{type:'line',data:{labels:trendLabels,datasets:[{label:'Créditos',data:trendCred,borderColor:'#F5822D',backgroundColor:'rgba(245,130,45,0.1)',tension:.4,fill:true,yAxisID:'y'},{label:'Entregas',data:trendDel,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.1)',tension:.4,fill:true,yAxisID:'y1'}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:th.tickColor,font:{size:11}}}},scales:{y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true},y1:{position:'right',grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true}}}});
+
+  // Ranking ponderado horizontal
+  const rankData=DESIGN_TEAM.map(n=>({name:n,score:done.filter(d=>d.resp===n).reduce((a,d)=>a+weightedScore(d),0)})).filter(x=>x.score>0).sort((a,b)=>b.score-a.score);
+  if(gRankCI)gRankCI.destroy();
+  if(rankData.length){gRankCI=new Chart(document.getElementById('g-rank'),{type:'bar',data:{labels:rankData.map(x=>x.name),datasets:[{data:rankData.map(x=>x.score),backgroundColor:rankData.map(x=>RC[x.name]||'#999'),borderRadius:6,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.x)} pts ponderados`}}},scales:{x:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true},y:{grid:{display:false},ticks:{color:th.tickColor,font:{size:12},font:{weight:'500'}},border:{color:'transparent'}}}}});}
+
+  // Heatmap
+  const heatEl=document.getElementById('g-heatmap');
+  if(activeMonth!=='all'){
+    const allDays=getBusinessDays(activeMonth);
+    const allCalDays=[];
+    const[hy,hm]=activeMonth.split('-').map(Number);
+    const hd=new Date(hy,hm-1,1);
+    while(hd.getMonth()===hm-1){allCalDays.push(`${hy}-${String(hm).padStart(2,'0')}-${String(hd.getDate()).padStart(2,'0')}`);hd.setDate(hd.getDate()+1);}
+    const byDay={};allCalDays.forEach(d=>byDay[d]=0);
+    done.forEach(d=>{const ref=d.entrega||d.date;if(ref&&byDay[ref]!==undefined)byDay[ref]++;});
+    const maxVal=Math.max(...Object.values(byDay),1);
+    heatEl.innerHTML=`<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">
+      ${['S','T','Q','Q','S','S','D'].map(d=>`<div style="text-align:center;font-size:9px;color:var(--text3);padding-bottom:2px">${d}</div>`).join('')}
+      ${Array(new Date(hy,hm-1,1).getDay()).fill('<div></div>').join('')}
+      ${allCalDays.map(day=>{
+        const cnt=byDay[day];
+        const opacity=cnt?0.2+cnt/maxVal*0.8:0.05;
+        const isWeekend=[0,6].includes(new Date(day).getDay());
+        const bg=cnt?`rgba(245,130,45,${opacity})`:(isWeekend?'rgba(128,128,128,0.05)':'rgba(128,128,128,0.08)');
+        return`<div title="${fmtDate(day)}: ${cnt} entrega${cnt!==1?'s':''}" style="aspect-ratio:1;border-radius:4px;background:${bg};display:flex;align-items:center;justify-content:center;font-size:9px;color:${cnt?'var(--text)':'var(--text3)'}${cnt?';font-weight:600':''}">${cnt||''}</div>`;
+      }).join('')}
+    </div>`;
+  } else {
+    heatEl.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0">Selecione um mês para ver o mapa de calor</div>';
+  }
+
+  // Tempo médio de entrega
+  const comDatas=done.filter(d=>d.date&&d.entrega&&d.entrega>d.date);
+  const avgDays=comDatas.length?Math.round(comDatas.reduce((a,d)=>{const diff=(new Date(d.entrega)-new Date(d.date))/(1000*60*60*24);return a+diff;},0)/comDatas.length):null;
+  document.getElementById('g-avgtime-card').innerHTML=`<div style="display:flex;align-items:center;gap:20px">
+    <div><div class="card-title" style="margin-bottom:6px">Tempo médio de entrega</div>
+    ${avgDays!==null?`<div style="font-size:32px;font-weight:700;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif">${avgDays} <span style="font-size:14px;font-weight:400;color:var(--text2)">dias úteis em média</span></div><div style="font-size:12px;color:var(--text3);margin-top:4px">baseado em ${comDatas.length} demanda${comDatas.length!==1?'s':''} com data de entrega registrada</div>`:`<div style="color:var(--text3);font-size:13px">Dados insuficientes — as entregas precisam do campo entrega preenchido</div>`}
+    </div></div>`;
 }
 
 // ── Filtros ───────────────────────────────────────────────────────
