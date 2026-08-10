@@ -336,7 +336,6 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
 
     <!-- ABA GERENCIAL -->
     <div class="view" id="view-gerencial">
-      <div class="kpi-row" id="g-kpis" style="margin-bottom:16px"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
         <div class="card" id="g-destaque-card" style="display:flex;flex-direction:column;justify-content:center"></div>
         <div class="card">
@@ -364,7 +363,6 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
           <div id="g-heatmap" style="margin-top:8px"></div>
         </div>
       </div>
-      <div class="card" style="margin-bottom:16px" id="g-avgtime-card"></div>
     </div>
     <!-- ABA AUDIOVISUAL -->
 
@@ -854,11 +852,6 @@ function renderGerencial(){
   }
 
   // KPIs comparativos
-  document.getElementById('g-kpis').innerHTML=`
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div><div class="kpi-label">Créditos${varBadge(total,totalPrev)}</div><div class="kpi-val accent">${fmt(total)}</div><div class="kpi-sub">${prevMonth?`${fmt(totalPrev)} no mês anterior`:'total no período'}</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="kpi-label">Entregas${varBadgeAbs(done.length,donePrev.length)}</div><div class="kpi-val">${done.length}</div><div class="kpi-sub">${prevMonth?`${donePrev.length} no mês anterior`:'concluídas'}</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div><div class="kpi-label">Média${varBadge(avg,avgPrev)}</div><div class="kpi-val">${avg}</div><div class="kpi-sub">${prevMonth?`${avgPrev} no mês anterior`:'créditos / entrega'}</div></div></div>
-    <div class="kpi"><div class="kpi-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="kpi-label">Taxa conclusão${varBadgeAbs(pct,pctPrev)}</div><div class="kpi-val">${pct}%</div><div class="kpi-sub">${prevMonth?`${pctPrev}% no mês anterior`:'entregas / demandas'}</div></div></div>`;
 
   // Ranking unificado (Designer do mês + posições)
   const scoreMap={};DESIGN_TEAM.forEach(n=>scoreMap[n]=0);
@@ -985,27 +978,6 @@ function renderGerencial(){
     heatEl.innerHTML='<div style="color:var(--text3);font-size:12px;padding:20px 0">Selecione um mês para ver o mapa de calor</div>';
   }
 
-  // Tempo médio de entrega por designer
-  const maxAvgDays=Math.max(1,...DESIGN_TEAM.map(n=>{
-    const des=done.filter(d=>d.resp===n&&d.date&&d.entrega&&d.entrega>d.date);
-    return des.length?Math.round(des.reduce((s,d)=>{return s+(new Date(d.entrega)-new Date(d.date))/(1000*60*60*24);},0)/des.length):0;
-  }));
-  document.getElementById('g-avgtime-card').innerHTML=`<div>
-    <div class="card-title" style="margin-bottom:14px">Tempo médio de entrega por designer</div>
-    ${DESIGN_TEAM.map(n=>{
-      const des=done.filter(d=>d.resp===n&&d.date&&d.entrega&&d.entrega>d.date);
-      const avgD=des.length?Math.round(des.reduce((s,d)=>{return s+(new Date(d.entrega)-new Date(d.date))/(1000*60*60*24);},0)/des.length):null;
-      const color=RC[n]||'#999';
-      const barPct=avgD?Math.round(avgD/maxAvgDays*100):0;
-      return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
-        <div style="width:80px;font-size:13px;font-weight:500;color:var(--text2)">${n}</div>
-        <div style="flex:1;height:8px;background:rgba(128,128,128,0.12);border-radius:4px;overflow:hidden">
-          <div style="height:100%;width:${barPct}%;background:${color};border-radius:4px"></div>
-        </div>
-        <div style="width:70px;font-size:12px;color:var(--text3);text-align:right">${avgD!==null?`${avgD} dia${avgD!==1?'s':''}`:des.length===0?'sem dados':'—'}</div>
-      </div>`;
-    }).join('')}
-  </div>`;
 }
 
 // ── Filtros ───────────────────────────────────────────────────────
