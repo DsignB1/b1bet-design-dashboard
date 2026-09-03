@@ -169,7 +169,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <div class="logo-icon">B1</div>
+      <div class="logo-icon" onclick="switchTab('dashboard',document.querySelector('.nav-item[onclick*=\'dashboard\']'))" style="cursor:pointer" title="Voltar ao Dashboard">B1</div>
     </div>
     <div class="sidebar-filters">
       <select id="year-filter" class="sidebar-select" onchange="applyMonthFilter()"></select>
@@ -280,6 +280,13 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
           </div>
           <div class="field"><label>Data de postagem</label><input type="date" id="f-post"></div>
           <div class="field"><label>Link ClickUp</label><input type="text" id="f-clickup" placeholder="https://app.clickup.com/..."></div>
+          <div class="field"><label>Prioridade</label>
+            <select id="f-prior"><option value="">Selecionar...</option><option value="Alta">Alta</option><option value="Media">Média</option><option value="Baixa">Baixa</option></select>
+          </div>
+          <div class="field" style="display:flex;align-items:center;gap:10px;padding-top:22px">
+            <input type="checkbox" id="f-reativa" style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer">
+            <label for="f-reativa" style="font-size:13px;cursor:pointer;margin:0">Demanda Reativa</label>
+          </div>
         </div>
         <div class="form-actions">
           <button class="btn" onclick="toggleModal()">Cancelar</button>
@@ -347,11 +354,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
           <div class="legend" id="g-leg-cat" style="margin-bottom:8px"></div>
           <div style="position:relative;width:100%;height:160px"><canvas id="g-cat"></canvas></div>
         </div>
-        <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
-          <div class="card-title" style="width:100%">Taxa de conclusão</div>
-          <div style="position:relative;width:100%;height:140px"><canvas id="g-gauge"></canvas></div>
-          <div id="g-gauge-label" style="margin-top:-48px;text-align:center;position:relative;z-index:1"></div>
-        </div>
+        <div class="card" id="g-prior-card"></div>
       </div>
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">Evolução mensal — últimos 6 meses</div>
@@ -389,6 +392,7 @@ html,body{height:100%;margin:0;padding:0;font-family:'Inter',system-ui,sans-seri
         <div class="card-title">Evolução no período</div>
         <div style="position:relative;width:100%;height:220px"><canvas id="bal-chart"></canvas></div>
       </div>
+      <div id="bal-detalhe" style="display:none;margin-bottom:16px"></div>
     </div>
 
   </div><!-- /.main -->
@@ -534,7 +538,8 @@ function renderBalanco(){
   resumoEl.innerHTML=`<div class="card" style="font-size:14px;line-height:1.8;color:var(--text2)">${texto}</div>`;
 
   // gráfico evolução dia a dia
-  if(totalDem===0){chartCard.style.display='none';if(balCI){balCI.destroy();balCI=null;}return;}
+  const detalheEl=document.getElementById('bal-detalhe');
+  if(totalDem===0){chartCard.style.display='none';detalheEl.style.display='none';if(balCI){balCI.destroy();balCI=null;}return;}
   chartCard.style.display='block';
   const days=[];
   const cur=new Date(from);const end=new Date(to);
@@ -548,6 +553,40 @@ function renderBalanco(){
     {label:'Entregas',data:dayDem,borderColor:'#38bdf8',backgroundColor:'rgba(56,189,248,0.08)',tension:.3,fill:true,yAxisID:'y'},
     {label:'Créditos',data:dayCred,borderColor:'#F5822D',backgroundColor:'rgba(245,130,45,0.08)',tension:.3,fill:true,yAxisID:'y1'}
   ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,labels:{color:th.tickColor,font:{size:11}}}},scales:{y:{grid:{color:th.gridColor},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true,title:{display:true,text:'Entregas',color:th.tickColor,font:{size:10}}},y1:{position:'right',grid:{display:false},ticks:{color:th.tickColor,font:{size:10}},border:{color:'transparent'},beginAtZero:true,title:{display:true,text:'Créditos',color:th.tickColor,font:{size:10}}}}}});
+
+  // Detalhamento por categoria
+  const priorColors={Alta:'#b83232',Media:'#f0a500',Baixa:'#2e7d52'};
+  const priorLabels={Alta:'Alta',Media:'Média',Baixa:'Baixa'};
+  const catRows=Object.keys(CC).map(cat=>{
+    const items=period.filter(d=>d.cat===cat);
+    if(!items.length)return'';
+    const reativas=items.filter(d=>d.reativa).length;
+    const alta=items.filter(d=>d.prioridade==='Alta').length;
+    const media=items.filter(d=>d.prioridade==='Media').length;
+    const baixa=items.filter(d=>d.prioridade==='Baixa').length;
+    return`<tr style="border-bottom:0.5px solid var(--border2)">
+      <td style="padding:10px 12px"><span class="badge ${CB[cat]||'b-outros'}">${CL[cat]||cat}</span></td>
+      <td style="padding:10px 12px;font-weight:600;text-align:center">${items.length}</td>
+      <td style="padding:10px 12px;text-align:center">${reativas>0?`<span style="color:#b83232;font-weight:600">⚡ ${reativas}</span>`:'—'}</td>
+      <td style="padding:10px 12px;text-align:center">${alta?`<span style="color:#b83232;font-size:11px;font-weight:600">${alta}</span>`:'—'}</td>
+      <td style="padding:10px 12px;text-align:center">${media?`<span style="color:#f0a500;font-size:11px;font-weight:600">${media}</span>`:'—'}</td>
+      <td style="padding:10px 12px;text-align:center">${baixa?`<span style="color:#2e7d52;font-size:11px;font-weight:600">${baixa}</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
+  detalheEl.style.display='block';
+  detalheEl.innerHTML=`<div class="card"><div class="card-title" style="margin-bottom:14px">Detalhamento por categoria</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:1px solid var(--border2)">
+        <th style="padding:8px 12px;text-align:left;color:var(--text3);font-weight:500;font-size:11px;text-transform:uppercase">Categoria</th>
+        <th style="padding:8px 12px;text-align:center;color:var(--text3);font-weight:500;font-size:11px;text-transform:uppercase">Entregas</th>
+        <th style="padding:8px 12px;text-align:center;color:var(--text3);font-weight:500;font-size:11px;text-transform:uppercase">Reativas</th>
+        <th style="padding:8px 12px;text-align:center;color:#b83232;font-weight:500;font-size:11px;text-transform:uppercase">Alta</th>
+        <th style="padding:8px 12px;text-align:center;color:#f0a500;font-weight:500;font-size:11px;text-transform:uppercase">Média</th>
+        <th style="padding:8px 12px;text-align:center;color:#2e7d52;font-weight:500;font-size:11px;text-transform:uppercase">Baixa</th>
+      </tr></thead>
+      <tbody>${catRows}</tbody>
+    </table>
+  </div>`;
 }
 
 
@@ -556,7 +595,7 @@ function toggleModal(){
   modalOpen=!modalOpen;
   const m=document.getElementById('modal-new');
   if(modalOpen){m.classList.add('open');}
-  else{m.classList.remove('open');['f-date','f-resp','f-cat','f-title','f-post','f-clickup'].forEach(id=>document.getElementById(id).value='');}
+  else{m.classList.remove('open');['f-date','f-resp','f-cat','f-title','f-post','f-clickup','f-prior'].forEach(id=>document.getElementById(id).value='');document.getElementById('f-reativa').checked=false;}
 }
 // ── Criar demanda ─────────────────────────────────────────────────
 async function saveDemand(){
@@ -566,9 +605,11 @@ async function saveDemand(){
   const cat=document.getElementById('f-cat').value;
   const post=document.getElementById('f-post').value||null;
   const clickup=document.getElementById('f-clickup').value.trim()||null;
+  const prior=document.getElementById('f-prior').value||null;
+  const reativa=document.getElementById('f-reativa').checked;
   if(!date||!resp||!title||!cat){showNotif('Preencha data, designer, título e categoria.','error');return;}
   document.getElementById('btn-save').disabled=true;setSyncing(true);
-  const{error}=await sb.from('demandas').insert([{id:uid(),date,resp,title,cat,post,clickup,cred:null}]);
+  const{error}=await sb.from('demandas').insert([{id:uid(),date,resp,title,cat,post,clickup,cred:null,prioridade:prior,reativa}]);
   document.getElementById('btn-save').disabled=false;
   if(error){setSyncing(false);showNotif('Erro: '+error.message,'error');return;}
   toggleModal();
@@ -703,6 +744,8 @@ function renderCard(d,showCredInput){
     <div class="demand-meta">
       <span class="badge ${CB[d.cat]||'b-outros'}">${CL[d.cat]||d.cat}</span>
       <span class="badge ${done?'b-done':'b-pending'}">${done?`✓ ${fmt(d.cred)} créditos`:'aguardando créditos'}</span>
+      ${d.prioridade?`<span class="badge" style="background:${d.prioridade==='Alta'?'#fde8ec':d.prioridade==='Media'?'#fff8e1':'#e8f5e9'};color:${d.prioridade==='Alta'?'#b83232':d.prioridade==='Media'?'#b8860b':'#2e7d52'}">${d.prioridade==='Media'?'Média':d.prioridade}</span>`:''}
+      ${d.reativa?`<span class="badge" style="background:#fde8ec;color:#b83232">⚡ Reativa</span>`:''}
     </div>
     <div class="demand-info">
       <span>${d.resp}</span>
@@ -971,11 +1014,31 @@ function renderGerencial(){
   if(gCatCI)gCatCI.destroy();
   if(cats.length){gCatCI=new Chart(document.getElementById('g-cat'),{type:'doughnut',data:{labels:cats.map(c=>CL[c]||c),datasets:[{data:cv,backgroundColor:cc,borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'64%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});}
 
-  // Gauge taxa de conclusão
-  const gaugeColor=pct>=70?'#2e7d52':pct>=40?'#f0a500':'#b83232';
+  // Prioridades + Reativas
+  const totalReativas=done.filter(d=>d.reativa).length+pending.filter(d=>d.reativa).length;
+  const priorCount={Alta:0,Media:0,Baixa:0};
+  [...done,...pending].forEach(d=>{if(d.prioridade&&priorCount[d.prioridade]!==undefined)priorCount[d.prioridade]++;});
+  const priorColors={Alta:'#b83232',Media:'#f0a500',Baixa:'#2e7d52'};
+  const priorLabels={Alta:'Alta',Media:'Média',Baixa:'Baixa'};
+  const priorEntries=Object.entries(priorCount).filter(([,v])=>v>0);
   if(gGaugeCI)gGaugeCI.destroy();
-  gGaugeCI=new Chart(document.getElementById('g-gauge'),{type:'doughnut',data:{datasets:[{data:[pct,100-pct],backgroundColor:[gaugeColor,'rgba(128,128,128,0.1)'],borderWidth:0}]},options:{rotation:-90,circumference:180,cutout:'72%',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}}}});
-  document.getElementById('g-gauge-label').innerHTML=`<div style="font-size:28px;font-weight:700;color:${gaugeColor};font-family:'Plus Jakarta Sans',sans-serif">${pct}%</div><div style="font-size:11px;color:var(--text3)">${done.length} de ${done.length+pending.length}</div>`;
+  const priorCard=document.getElementById('g-prior-card');
+  priorCard.innerHTML=`<div class="card-title" style="margin-bottom:14px">Prioridade & Reativas</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="position:relative;width:90px;height:90px;flex-shrink:0"><canvas id="g-gauge"></canvas></div>
+      <div style="flex:1">${priorEntries.length?priorEntries.map(([k,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${priorColors[k]};flex-shrink:0"></span>
+        <span style="font-size:12px;flex:1">${priorLabels[k]}</span>
+        <span style="font-size:13px;font-weight:600">${v}</span>
+      </div>`).join(''):'<span style="font-size:12px;color:var(--text3)">Sem prioridades definidas</span>'}</div>
+    </div>
+    <div style="border-top:0.5px solid var(--border2);padding-top:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:22px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;color:${totalReativas>0?'#b83232':'var(--text3)'}">${totalReativas}</span>
+      <div><div style="font-size:11px;font-weight:600;color:${totalReativas>0?'#b83232':'var(--text3)'}">⚡ Demandas Reativas</div><div style="font-size:10px;color:var(--text3)">no período selecionado</div></div>
+    </div>`;
+  if(priorEntries.length){
+    gGaugeCI=new Chart(document.getElementById('g-gauge'),{type:'doughnut',data:{labels:priorEntries.map(([k])=>priorLabels[k]),datasets:[{data:priorEntries.map(([,v])=>v),backgroundColor:priorEntries.map(([k])=>priorColors[k]),borderColor:th.cardBg,borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed} demanda${ctx.parsed!==1?'s':''}`}}}}});
+  }
 
   // Linha evolução mensal com meta
   const now=new Date();
