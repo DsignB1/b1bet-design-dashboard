@@ -672,12 +672,16 @@ async function saveEdit(id){
         epost=document.getElementById('epost-'+id).value,
         eck=document.getElementById('eck-'+id).value.trim(),
         ecr=document.getElementById('ecr-'+id).value;
+  const eprior=document.getElementById('eprior-'+id).value;
+  const ereativa=document.getElementById('ereativa-'+id).checked;
   const upd={};
   if(er)upd.resp=er;
   if(ec)upd.cat=ec;if(et)upd.title=et;
   if(ed)upd.date=ed;if(epost)upd.post=epost;
   upd.clickup=eck||null;
   if(ecr!=='')upd.cred=parseInt(ecr)||null;
+  if(eprior!=='')upd.prioridade=eprior||null;
+  upd.reativa=ereativa;
   setSyncing(true);
   const{error}=await sb.from('demandas').update(upd).eq('id',id);
   if(error){setSyncing(false);showNotif('Erro: '+error.message,'error');return;}
@@ -770,6 +774,13 @@ function renderCard(d,showCredInput){
         <div class="field"><label>Créditos</label><input type="number" id="ecr-${d.id}" placeholder="${d.cred!==null?d.cred:'—'}" min="0"></div>
         <div class="field"><label>Data da entrega</label><input type="date" id="ed-${d.id}" value="${d.date||''}"></div>
         <div class="field"><label>Data de postagem</label><input type="date" id="epost-${d.id}" value="${d.post||''}"></div>
+        <div class="field"><label>Prioridade</label><select id="eprior-${d.id}"><option value="">Manter: ${d.prioridade==='Media'?'Média':d.prioridade||'—'}</option><option value="Alta">Alta</option><option value="Media">Média</option><option value="Baixa">Baixa</option><option value="">Remover prioridade</option></select></div>
+        <div class="field"><label>Demanda Reativa</label>
+          <div style="display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;background:var(--card2);border:0.5px solid var(--border2);border-radius:8px;cursor:pointer" onclick="document.getElementById('ereativa-${d.id}').click()">
+            <input type="checkbox" id="ereativa-${d.id}" ${d.reativa?'checked':''} style="width:15px;height:15px;accent-color:var(--orange);cursor:pointer;flex-shrink:0" onclick="event.stopPropagation()">
+            <span style="font-size:13px;color:var(--text2)">⚡ Marcar como reativa</span>
+          </div>
+        </div>
       </div>
       <div class="field" style="margin-bottom:14px"><label>Link ClickUp</label><input type="text" id="eck-${d.id}" value="${d.clickup||''}" placeholder="https://app.clickup.com/..."></div>
       <div class="form-actions">
@@ -1031,8 +1042,8 @@ function renderGerencial(){
       <div style="position:relative;width:90px;height:90px;flex-shrink:0"><canvas id="g-gauge"></canvas></div>
       <div style="flex:1">${priorEntries.length?priorEntries.map(([k,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span style="width:10px;height:10px;border-radius:50%;background:${priorColors[k]};flex-shrink:0"></span>
-        <span style="font-size:12px;flex:1">${priorLabels[k]}</span>
-        <span style="font-size:13px;font-weight:600">${v}</span>
+        <span style="font-size:12px;flex:1;color:var(--text)">${priorLabels[k]}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text)">${v}</span>
       </div>`).join(''):'<span style="font-size:12px;color:var(--text3)">Sem prioridades definidas</span>'}</div>
     </div>
     <div style="border-top:0.5px solid var(--border2);padding-top:12px;display:flex;align-items:center;gap:10px">
